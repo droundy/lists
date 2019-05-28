@@ -1,0 +1,23 @@
+[package]
+name = "thing-lists"
+version = "0.0.1"
+authors = ["David Roundy <roundyd@physics.oregonstate.edu>"]
+description = "Website for lists of things."
+license = "Apache-2.0/MIT"
+edition = "2018"
+
+[dependencies]
+csv = "1"
+serde = "1.0"
+serde_derive = "1.0"
+serde_yaml = "0.7"
+tempfile = "3.0.3"
+warp = "0.1.9"
+display-as = { version = "0.4.3", features = ["warp"] }
+simple-error = "0.1.9"
+dot = "0.1.4"
+rand = "0.6.4"
+bytes = "0.4.11"
+
+pulldown-cmark = { version = "0.2.0", default-features = false }
+html2md = "0.2.5"
