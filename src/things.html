@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>[% self.name %]</title>
+  <link rel="stylesheet" href="/style.css">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+</head>
+<body>
+  <nav>
+    <ul>
+      <li><a href="/">Everything</a></li>
+    </ul>
+  </nav>
+  <main>
+    <header>
+      <h1>[% self.name %]</h1>
+    </header>
+    <ul>
+      <li>
+        <form action="/new-thing" method="post"
+              target="hidden-form"
+              onsubmit="setTimeout(function () { window.location.reload(); }, 500)">
+          <label>New [% self.name %]</label>
+          <input type="text" name="name">
+          <input type="hidden" name="parent" value="[% self.name %]">
+        </form>
+        <iframe style="display:none" name="hidden-form"></iframe>
+      </li>
+      [% for child in self.children.iter() {
+      %]<li>[% child as URL %]</li>[%
+      } %]
+    </ul>
+  </main>
+</body>
+</html>
+
+
