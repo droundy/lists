@@ -3,6 +3,9 @@ use display_as::{with_template, format_as, display, HTML, UTF8, URL, DisplayAs};
 use serde_derive::{Deserialize, Serialize};
 
 mod atomicfile;
+mod time;
+
+use time::{Time, now, DAY};
 
 fn main() {
     let style_css = path!("style.css").and(warp::fs::file("style.css"));
@@ -52,20 +55,47 @@ struct NewThing {
 impl NewThing {
     fn save(&self) {
         let mut list = ThingList::read(&self.code, &self.list);
-        list.things.push(Thing {
+        let mut newthing = Thing {
             name: self.name.clone(),
-            times_used: 0,
-            times_skipped: 0,
-        });
+            next: now(),
+            first_chosen: now(),
+            chosen: now(),
+            created: now(),
+            count: 0,
+        };
+        list.things.push(newthing);
         list.save();
     }
 }
 
 #[derive(Debug, Hash, Clone, PartialEq, Eq, Serialize, Deserialize)]
-struct Thing {
+struct ChooseThing {
+    code: String,
     name: String,
-    times_used: u64,
-    times_skipped: u64,
+    list: String,
+}
+
+impl ChooseThing {
+    fn save(&self) {
+        let mut list = ThingList::read(&self.code, &self.list);
+        let mut newthing = Thing {
+            name: self.name.clone(),
+            next: now(),
+            first_chosen: now(),
+            chosen: now(),
+            created: now(),
+            count: 0,
+        };
+        list.things.push(newthing);
+        list.save();
+    }
+}
+
+#[derive(Debug, Hash, Clone, PartialEq, Eq, Serialize, Deserialize)]
+struct DelayThing {
+    code: String,
+    name: String,
+    list: String,
 }
 
 #[derive(Debug, Hash, Clone, PartialEq, Eq, Serialize, Deserialize)]
@@ -77,13 +107,51 @@ struct ThingList {
 
 #[with_template("[%" "%]" "things.html")]
 impl DisplayAs<HTML> for ThingList {}
+
+#[derive(Debug, Hash, Clone, PartialEq, Eq, Serialize, Deserialize)]
+struct Thing {
+    name: String,
+    created: Time,
+    first_chosen: Time,
+    chosen: Time,
+    next: Time,
+    count: u64,
+}
 #[with_template(r#"<a href="/list/"# self.name r#"">"# self.name "</a>")]
 impl DisplayAs<URL> for Thing {}
 
 impl Thing {
-    fn priority(&self) -> u64 {
-        self.times_used + self.times_skipped
+    fn priority(&self) -> Time {
+        self.next
     }
+    fn mean_interval(&self) -> Time {
+        if self.count < 2 {
+            DAY
+        } else {
+            (self.chosen - self.first_chosen) / (self.count - 1)
+        }
+    }
+    fn choose(&mut self, mean_interval_all: Time) {
+        // print(
+        // 'choosing: ${prettyTime(chosen)}  and  ${prettyDuration(meanInterval)}  and  ${prettyDuration(meanIntervalList)}');
+        let now = now();
+        let last_interval = now - self.chosen;
+        self.next = if self.count > 1 {
+            now + time::geometric_mean(&[last_interval,
+                                         self.mean_interval(),
+                                         mean_interval_all])
+        } else if self.count == 1 {
+            now + time::geometric_mean(&[last_interval, mean_interval_all])
+        } else {
+            now + mean_interval_all
+        };
+        self.chosen = now;
+        self.count += 1;
+        if self.count == 1 {
+            self.first_chosen = now;
+        }
+    }
+
 }
 
 fn read_lists(code: &str) -> Vec<String> {
