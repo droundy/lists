@@ -1,4 +1,3 @@
-[% let all = Thing::read(); %]
 <!DOCTYPE html>
 <html>
 <head>
@@ -9,13 +8,15 @@
 <body>
   <nav>
     <ul>
-      <li><a href="/">[% all as URL %]</a>
-        <ul>
-          [% for ch in all.children.iter() { %]
-          <li><a href="/">[% ch as URL %]</a></li>
-          [% } %]
-        </ul>
+      <li>
+        <form id="pass-form" onsubmit="var name_element = document.getElementById('the-name'); window.location.href = '/[% self.code %]/'+name_element.value; return false;">
+          <label>New list</label>
+          <input type="text" name="name" id="the-name">
+        </form>
       </li>
+      [% for ch in read_lists(&self.code).iter() { %]
+      <li><a href="/[% self.code %]/[% ch %]">[% ch %]</a></li>
+      [% } %]
     </ul>
   </nav>
   <main>
@@ -29,11 +30,12 @@
               onsubmit="setTimeout(function () { window.location.reload(); }, 500)">
           <label>New [% self.name %]</label>
           <input type="text" name="name">
-          <input type="hidden" name="parent" value="[% self.name %]">
+          <input type="hidden" name="list" value="[% self.name %]">
+          <input type="hidden" name="code" value="[% self.code %]">
         </form>
         <iframe style="display:none" name="hidden-form"></iframe>
       </li>
-      [% for child in self.children.iter() {
+      [% for child in self.things.iter() {
       %]<li>[% child as URL %]</li>[%
       } %]
     </ul>

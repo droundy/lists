@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title> self.name </title>
+  <link rel="stylesheet" href="/style.css">
+  <script type="text/javascript" src="random-pass.js"></script>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+</head>
+<body>
+  <nav>
+    <ul>
+      <!-- <li><a href="/">[ % all as URL % ]</a> -->
+      <!--   <ul> -->
+      <!--     [ % for ch in all.children.iter() { % ] -->
+      <!--     <li><a href="/">[ % ch as URL % ]</a></li> -->
+      <!--     [ % } % ] -->
+      <!--   </ul> -->
+      <!-- </li> -->
+    </ul>
+  </nav>
+  <main>
+    <header>
+      <h1> self.name </h1>
+    </header>
+    <form id="pass-form" onsubmit="var name_element = document.getElementById('the-name');
+; window.location.href = random_pass()+'/'+name_element.value; return false;">
+      <label>New list</label>
+      <input type="text" name="name" id="the-name">
+    </form>
+  </main>
+</body>
+</html>
+
+

@@ -6,6 +6,7 @@ mod atomicfile;
 
 fn main() {
     let style_css = path!("style.css").and(warp::fs::file("style.css"));
+    let js = path!("random-pass.js").and(warp::fs::file("random-pass.js"));
     let new = path!("new-thing")
         .and(warp::filters::body::form())
         .map(|change: NewThing| {
@@ -15,45 +16,48 @@ fn main() {
         });
     let index = (warp::path::end().or(path!("index.html")))
         .map(|_| {
-            display(HTML, &Thing::read()).http_response()
+            display(HTML, &Index {}).http_response()
         });
-    let list = path!("list" / String)
-        .map(|parent: String| {
-            if let Some(x) = Thing::read().lookup(&parent) {
-                display(HTML, x).http_response()
-            } else {
-                display(HTML, &Thing::read()).http_response()
-            }
+    let list = path!(String / String)
+        .map(|code: String, listname: String| {
+            let x = ThingList::read(&code, &listname);
+            display(HTML, &x).http_response()
         });
-
-    let things = Thing::read();
-    things.save();
+    let list_of_lists = path!(String)
+        .map(|code: String| {
+            let x = ThingList::read(&code, "fixme");
+            display(HTML, &x).http_response()
+        });
 
     warp::serve(style_css
+                .or(js)
                 .or(new)
                 .or(list)
+                .or(list_of_lists)
                 .or(index))
         .run(([0, 0, 0, 0], 3000));
 }
 
+struct Index {}
+#[with_template("[%" "%]" "index.html")]
+impl DisplayAs<HTML> for Index {}
+
 #[derive(Debug, Hash, Clone, PartialEq, Eq, Serialize, Deserialize)]
 struct NewThing {
+    code: String,
     name: String,
-    parent: String,
+    list: String,
 }
 
 impl NewThing {
     fn save(&self) {
-        let mut things = Thing::read();
-        if let Some(subthing) = things.lookup_mut(&self.parent) {
-            subthing.children.push(Thing {
-                name: self.name.clone(),
-                times_used: 0,
-                times_skipped: 0,
-                children: Vec::new(),
-            });
-        }
-        things.save();
+        let mut list = ThingList::read(&self.code, &self.list);
+        list.things.push(Thing {
+            name: self.name.clone(),
+            times_used: 0,
+            times_skipped: 0,
+        });
+        list.save();
     }
 }
 
@@ -62,11 +66,17 @@ struct Thing {
     name: String,
     times_used: u64,
     times_skipped: u64,
-    children: Vec<Thing>,
+}
+
+#[derive(Debug, Hash, Clone, PartialEq, Eq, Serialize, Deserialize)]
+struct ThingList {
+    code: String,
+    name: String,
+    things: Vec<Thing>,
 }
 
 #[with_template("[%" "%]" "things.html")]
-impl DisplayAs<HTML> for Thing {}
+impl DisplayAs<HTML> for ThingList {}
 #[with_template(r#"<a href="/list/"# self.name r#"">"# self.name "</a>")]
 impl DisplayAs<URL> for Thing {}
 
@@ -74,45 +84,51 @@ impl Thing {
     fn priority(&self) -> u64 {
         self.times_used + self.times_skipped
     }
-    fn lookup(&self, parent: &str) -> Option<&Self> {
-        if self.name == parent {
-            return Some(self);
-        }
-        for child in self.children.iter() {
-            if let Some(x) = child.lookup(parent) {
-                return Some(x);
+}
+
+fn read_lists(code: &str) -> Vec<String> {
+    let dir: std::path::PathBuf = format!("data/{}", code).into();
+    match std::fs::read_dir(&dir) {
+        Ok(ddd) => {
+            let mut lists = Vec::new();
+            for entry in ddd {
+                if let Ok(entry) = entry {
+                    if let Some(s) = entry.path().to_str()
+                        .iter().flat_map(|x| x.rsplit('/')).next() {
+                        lists.push(s.to_string());
+                    }
+                }
             }
+            lists
         }
-        None
+        Err(_) => {
+            Vec::new()
+        }
     }
-    fn lookup_mut(&mut self, parent: &str) -> Option<&mut Self> {
-        if self.name == parent {
-            return Some(self);
-        }
-        for child in self.children.iter_mut() {
-            if let Some(x) = child.lookup_mut(parent) {
-                return Some(x);
+}
+
+impl ThingList {
+    fn read(code: &str, name: &str) -> Self {
+        if let Ok(f) = ::std::fs::File::open(format!("data/{}/{}", code, name)) {
+            if let Ok(s) = serde_yaml::from_reader::<_,Vec<Thing>>(&f) {
+                return ThingList {
+                    code: code.to_string(),
+                    name: name.to_string(),
+                    things: s,
+                };
             }
         }
-        None
-    }
-    fn read() -> Self {
-        if let Ok(f) = ::std::fs::File::open("things.yaml") {
-            if let Ok(s) = serde_yaml::from_reader::<_,Self>(&f) {
-                return s;
-            }
-        }
-        Thing {
-            name: String::from("Everything"),
-            times_used: 0,
-            times_skipped: 0,
-            children: Vec::new(),
+        ThingList {
+            code: code.to_string(),
+            name: name.to_string(),
+            things: Vec::new(),
         }
     }
     fn save(&self) {
-        let f = atomicfile::AtomicFile::create("things.yaml")
+        let f = atomicfile::AtomicFile::create(format!("data/{}/{}",
+                                                       self.code, self.name))
             .expect("error creating save file");
-        serde_yaml::to_writer(&f, self).expect("error writing yaml")
+        serde_yaml::to_writer(&f, &self.things).expect("error writing yaml")
     }
 }
 

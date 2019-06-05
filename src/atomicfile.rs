@@ -30,6 +30,7 @@ impl AtomicFile {
             }
             Some(p) => p,
         };
+        std::fs::create_dir_all(&p).ok();
         let dir = TempDir::new_in(p)?;
         let file_path = dir.path().join("temp");
         let file = File::create(file_path)?;
