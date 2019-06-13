@@ -3,9 +3,6 @@ use display_as::{with_template, format_as, display, HTML, UTF8, URL, DisplayAs};
 use serde_derive::{Deserialize, Serialize};
 
 mod atomicfile;
-mod time;
-
-use time::{Time, now, DAY};
 
 fn main() {
     let style_css = path!("style.css").and(warp::fs::file("style.css"));
@@ -45,7 +42,7 @@ struct Index {}
 #[with_template("[%" "%]" "index.html")]
 impl DisplayAs<HTML> for Index {}
 
-#[derive(Debug, Hash, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 struct NewThing {
     code: String,
     name: String,
@@ -55,12 +52,13 @@ struct NewThing {
 impl NewThing {
     fn save(&self) {
         let mut list = ThingList::read(&self.code, &self.list);
-        let mut newthing = Thing {
+        let now = list.now();
+        let newthing = Thing {
             name: self.name.clone(),
-            next: now(),
-            first_chosen: now(),
-            chosen: now(),
-            created: now(),
+            next: now,
+            first_chosen: now,
+            chosen: now,
+            created: now,
             count: 0,
         };
         list.things.push(newthing);
@@ -68,7 +66,7 @@ impl NewThing {
     }
 }
 
-#[derive(Debug, Hash, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 struct ChooseThing {
     code: String,
     name: String,
@@ -78,12 +76,13 @@ struct ChooseThing {
 impl ChooseThing {
     fn save(&self) {
         let mut list = ThingList::read(&self.code, &self.list);
-        let mut newthing = Thing {
+        let now = list.now();
+        let newthing = Thing {
             name: self.name.clone(),
-            next: now(),
-            first_chosen: now(),
-            chosen: now(),
-            created: now(),
+            next: now,
+            first_chosen: now,
+            chosen: now,
+            created: now,
             count: 0,
         };
         list.things.push(newthing);
@@ -91,67 +90,36 @@ impl ChooseThing {
     }
 }
 
-#[derive(Debug, Hash, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 struct DelayThing {
     code: String,
     name: String,
     list: String,
 }
 
-#[derive(Debug, Hash, Clone, PartialEq, Eq, Serialize, Deserialize)]
-struct ThingList {
-    code: String,
-    name: String,
-    things: Vec<Thing>,
-}
-
-#[with_template("[%" "%]" "things.html")]
-impl DisplayAs<HTML> for ThingList {}
-
-#[derive(Debug, Hash, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 struct Thing {
     name: String,
-    created: Time,
-    first_chosen: Time,
-    chosen: Time,
-    next: Time,
+    created: f64,
+    first_chosen: f64,
+    chosen: f64,
+    next: f64,
     count: u64,
 }
 #[with_template(r#"<a href="/list/"# self.name r#"">"# self.name "</a>")]
 impl DisplayAs<URL> for Thing {}
 
 impl Thing {
-    fn priority(&self) -> Time {
+    fn priority(&self) -> f64 {
         self.next
     }
-    fn mean_interval(&self) -> Time {
+    fn mean_interval(&self) -> f64 {
         if self.count < 2 {
-            DAY
+            1.0
         } else {
-            (self.chosen - self.first_chosen) / (self.count - 1)
+            (self.chosen - self.first_chosen) / (self.count as f64 - 1.0)
         }
     }
-    fn choose(&mut self, mean_interval_all: Time) {
-        // print(
-        // 'choosing: ${prettyTime(chosen)}  and  ${prettyDuration(meanInterval)}  and  ${prettyDuration(meanIntervalList)}');
-        let now = now();
-        let last_interval = now - self.chosen;
-        self.next = if self.count > 1 {
-            now + time::geometric_mean(&[last_interval,
-                                         self.mean_interval(),
-                                         mean_interval_all])
-        } else if self.count == 1 {
-            now + time::geometric_mean(&[last_interval, mean_interval_all])
-        } else {
-            now + mean_interval_all
-        };
-        self.chosen = now;
-        self.count += 1;
-        if self.count == 1 {
-            self.first_chosen = now;
-        }
-    }
-
 }
 
 fn read_lists(code: &str) -> Vec<String> {
@@ -175,6 +143,16 @@ fn read_lists(code: &str) -> Vec<String> {
     }
 }
 
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+struct ThingList {
+    code: String,
+    name: String,
+    things: Vec<Thing>,
+}
+
+#[with_template("[%" "%]" "things.html")]
+impl DisplayAs<HTML> for ThingList {}
+
 impl ThingList {
     fn read(code: &str, name: &str) -> Self {
         if let Ok(f) = ::std::fs::File::open(format!("data/{}/{}", code, name)) {
@@ -192,11 +170,37 @@ impl ThingList {
             things: Vec::new(),
         }
     }
+    fn now(&self) -> f64 {
+        self.things.iter().map(|x| x.count as f64).sum()
+    }
+    fn mean_interval(&self) -> f64 {
+        (self.now()+1.0)/((self.things.len()+1) as f64)
+    }
     fn save(&self) {
         let f = atomicfile::AtomicFile::create(format!("data/{}/{}",
                                                        self.code, self.name))
             .expect("error creating save file");
         serde_yaml::to_writer(&f, &self.things).expect("error writing yaml")
+    }
+    fn choose(&self, which: &mut Thing) {
+        // print(
+        // 'choosing: ${prettyTime(chosen)}  and  ${prettyDuration(meanInterval)}  and  ${prettyDuration(meanIntervalList)}');
+        let now = self.now() + 1.0;
+        let last_interval = now - which.chosen;
+        which.next = if which.count > 1 {
+            now + geometric_mean(&[last_interval,
+                                   which.mean_interval(),
+                                   self.mean_interval()])
+        } else if which.count == 1 {
+            now + geometric_mean(&[last_interval, self.mean_interval()])
+        } else {
+            now + self.mean_interval()
+        };
+        which.chosen = now;
+        which.count += 1;
+        if which.count == 1 {
+            which.first_chosen = now;
+        }
     }
 }
 
@@ -208,6 +212,26 @@ impl PartialOrd for Thing {
 
 impl Ord for Thing {
     fn cmp(&self, other: &Self) -> std::cmp::Ordering {
-        self.priority().cmp(&other.priority())
+        if self.priority() < other.priority() {
+            std::cmp::Ordering::Less
+        } else {
+            std::cmp::Ordering::Greater
+        }
     }
+}
+
+impl PartialEq for Thing {
+    fn eq(&self, other: &Self) -> bool {
+        self.name == other.name
+    }
+}
+
+impl Eq for Thing {}
+
+pub fn geometric_mean(data: &[f64]) -> f64 {
+    let mut product = 1.0;
+    for &d in data.iter() {
+        product *= d;
+    }
+    product.powf(1.0/data.len() as f64)
 }
