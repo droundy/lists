@@ -30,22 +30,13 @@
               target="hidden-form"
               onsubmit="setTimeout(function () { window.location.reload(); }, 500)">
           <label>New [% self.name %]</label>
-          <input type="text" name="name">
+          <input type="text" name="name" autofocus>
           <input type="hidden" name="list" value="[% self.name %]">
           <input type="hidden" name="code" value="[% self.code %]">
         </form>
       </li>
       [% for child in self.things.iter() {
-      %]<li>[% child as URL %] <form action="/choose-thing" method="post"
-              target="hidden-form"
-              onsubmit="setTimeout(function () { window.location.reload(); }, 500)">
-          <input type="submit" value="choose">
-          <input type="hidden" name="name" value="[% child.name %]">
-          <input type="hidden" name="list" value="[% self.name %]">
-          <input type="hidden" name="code" value="[% self.code %]">
-        </form>
-        [% child.next %]
-</li>[%
+      %]<li>[% child %]</li>[%
       } %]
     </ul>
   </main>

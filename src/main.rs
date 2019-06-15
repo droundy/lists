@@ -68,6 +68,8 @@ impl NewThing {
             chosen: now,
             created: now,
             count: 0,
+            parent_code: self.code.clone(),
+            parent_name: self.name.clone(),
         };
         list.things.push(newthing);
         list.save();
@@ -104,9 +106,11 @@ struct Thing {
     chosen: f64,
     next: f64,
     count: u64,
+    parent_code: String,
+    parent_name: String,
 }
-#[with_template(r#"<a href="/list/"# self.name r#"">"# self.name "</a>")]
-impl DisplayAs<URL> for Thing {}
+#[with_template("[%" "%]" "thing.html")]
+impl DisplayAs<HTML> for Thing {}
 
 impl Thing {
     fn priority(&self) -> f64 {
@@ -194,6 +198,8 @@ impl ThingList {
             chosen: now,
             created: now,
             count: 0,
+            parent_name: self.name.clone(),
+            parent_code: self.code.clone(),
         };
         for (i,th) in self.things.iter_mut().enumerate() {
             if th.name == which {
