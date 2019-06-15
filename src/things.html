@@ -22,6 +22,7 @@
   <main>
     <header>
       <h1>[% self.name %]</h1>
+      <iframe style="display:none" name="hidden-form"></iframe>
     </header>
     <ul>
       <li>
@@ -33,10 +34,18 @@
           <input type="hidden" name="list" value="[% self.name %]">
           <input type="hidden" name="code" value="[% self.code %]">
         </form>
-        <iframe style="display:none" name="hidden-form"></iframe>
       </li>
       [% for child in self.things.iter() {
-      %]<li>[% child as URL %]</li>[%
+      %]<li>[% child as URL %] <form action="/choose-thing" method="post"
+              target="hidden-form"
+              onsubmit="setTimeout(function () { window.location.reload(); }, 500)">
+          <input type="submit" value="choose">
+          <input type="hidden" name="name" value="[% child.name %]">
+          <input type="hidden" name="list" value="[% self.name %]">
+          <input type="hidden" name="code" value="[% self.code %]">
+        </form>
+        [% child.next %]
+</li>[%
       } %]
     </ul>
   </main>

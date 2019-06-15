@@ -14,6 +14,13 @@ fn main() {
             change.save();
             "okay"
         });
+    let choose = path!("choose-thing")
+        .and(warp::filters::body::form())
+        .map(|change: ChooseThing| {
+            println!("choosing thing {:?}", change);
+            change.save();
+            "okay"
+        });
     let index = (warp::path::end().or(path!("index.html")))
         .map(|_| {
             display(HTML, &Index {}).http_response()
@@ -32,6 +39,7 @@ fn main() {
     warp::serve(style_css
                 .or(js)
                 .or(new)
+                .or(choose)
                 .or(list)
                 .or(list_of_lists)
                 .or(index))
@@ -76,16 +84,7 @@ struct ChooseThing {
 impl ChooseThing {
     fn save(&self) {
         let mut list = ThingList::read(&self.code, &self.list);
-        let now = list.now();
-        let newthing = Thing {
-            name: self.name.clone(),
-            next: now,
-            first_chosen: now,
-            chosen: now,
-            created: now,
-            count: 0,
-        };
-        list.things.push(newthing);
+        list.choose(&self.name);
         list.save();
     }
 }
@@ -182,25 +181,49 @@ impl ThingList {
             .expect("error creating save file");
         serde_yaml::to_writer(&f, &self.things).expect("error writing yaml")
     }
-    fn choose(&self, which: &mut Thing) {
+    fn choose(&mut self, which: &str) {
         // print(
         // 'choosing: ${prettyTime(chosen)}  and  ${prettyDuration(meanInterval)}  and  ${prettyDuration(meanIntervalList)}');
         let now = self.now() + 1.0;
-        let last_interval = now - which.chosen;
-        which.next = if which.count > 1 {
-            now + geometric_mean(&[last_interval,
-                                   which.mean_interval(),
-                                   self.mean_interval()])
-        } else if which.count == 1 {
-            now + geometric_mean(&[last_interval, self.mean_interval()])
-        } else {
-            now + self.mean_interval()
+        let list_mean = self.mean_interval();
+        let mut which_num = 0;
+        let mut thing = Thing {
+            name: self.name.clone(),
+            next: now,
+            first_chosen: now,
+            chosen: now,
+            created: now,
+            count: 0,
         };
-        which.chosen = now;
-        which.count += 1;
-        if which.count == 1 {
-            which.first_chosen = now;
+        for (i,th) in self.things.iter_mut().enumerate() {
+            if th.name == which {
+                thing = th.clone();
+                which_num = i;
+                let last_interval = now - thing.chosen;
+                thing.next = if thing.count > 1 {
+                    now + geometric_mean(&[last_interval,
+                                           thing.mean_interval(),
+                                           list_mean])
+                } else if thing.count == 1 {
+                    now + geometric_mean(&[last_interval, list_mean])
+                } else {
+                    now + list_mean
+                };
+                thing.chosen = now;
+                thing.count += 1;
+                if thing.count == 1 {
+                    thing.first_chosen = now;
+                }
+            }
         }
+        self.things.remove(which_num);
+        let mut place = 0;
+        for (i,th) in self.things.iter().enumerate() {
+            if th.next <= thing.next {
+                place = i+1;
+            }
+        }
+        self.things.insert(place, thing);
     }
 }
 
