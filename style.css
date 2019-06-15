@@ -596,7 +596,22 @@ body > nav {
     -moz-border-radius: 1em;
     -ms-border-radius: 1em;
     border-radius: 1em;
-    color: #fff; }
+    color: #fff;
+  }
+
+  form {
+      display: inline;
+  }
+
+input[type=submit] {
+  background-color: #4CAF50;
+  border: none;
+  color: white;
+  padding: 0.1em 0.2em;
+  text-decoration: none;
+  margin: 4px 2px;
+  cursor: pointer;
+}
 
 figure {
   clear: none;
