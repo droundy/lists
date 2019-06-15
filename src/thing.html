@@ -7,4 +7,12 @@
   <input type="hidden" name="list" value="[% self.parent_name %]">
   <input type="hidden" name="code" value="[% self.parent_code %]">
 </form>
+<form action="/delay-thing" method="post"
+              target="hidden-form"
+              onsubmit="setTimeout(function () { window.location.reload(); }, 500)">
+  <input type="submit" value="delay">
+  <input type="hidden" name="name" value="[% self.name %]">
+  <input type="hidden" name="list" value="[% self.parent_name %]">
+  <input type="hidden" name="code" value="[% self.parent_code %]">
+</form>
 [% self.next %]

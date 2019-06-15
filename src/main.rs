@@ -18,7 +18,14 @@ fn main() {
         .and(warp::filters::body::form())
         .map(|change: ChooseThing| {
             println!("choosing thing {:?}", change);
-            change.save();
+            change.choose();
+            "okay"
+        });
+    let delay = path!("delay-thing")
+        .and(warp::filters::body::form())
+        .map(|change: ChooseThing| {
+            println!("delay thing {:?}", change);
+            change.delay();
             "okay"
         });
     let index = (warp::path::end().or(path!("index.html")))
@@ -40,6 +47,7 @@ fn main() {
                 .or(js)
                 .or(new)
                 .or(choose)
+                .or(delay)
                 .or(list)
                 .or(list_of_lists)
                 .or(index))
@@ -69,7 +77,7 @@ impl NewThing {
             created: now,
             count: 0,
             parent_code: self.code.clone(),
-            parent_name: self.name.clone(),
+            parent_name: self.list.clone(),
         };
         list.things.push(newthing);
         list.save();
@@ -84,18 +92,16 @@ struct ChooseThing {
 }
 
 impl ChooseThing {
-    fn save(&self) {
+    fn choose(&self) {
         let mut list = ThingList::read(&self.code, &self.list);
         list.choose(&self.name);
         list.save();
     }
-}
-
-#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
-struct DelayThing {
-    code: String,
-    name: String,
-    list: String,
+    fn delay(&self) {
+        let mut list = ThingList::read(&self.code, &self.list);
+        list.delay(&self.name);
+        list.save();
+    }
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -230,6 +236,41 @@ impl ThingList {
             }
         }
         self.things.insert(place, thing);
+    }
+    fn delay(&mut self, which: &str) {
+        // print(
+        // 'choosing: ${prettyTime(chosen)}  and  ${prettyDuration(meanInterval)}  and  ${prettyDuration(meanIntervalList)}');
+        let now = self.now() + 1.0;
+        let list_mean = self.mean_interval();
+        let mut which_num = 0;
+        let mut thing = Thing {
+            name: self.name.clone(),
+            next: now,
+            first_chosen: now,
+            chosen: now,
+            created: now,
+            count: 0,
+            parent_name: self.name.clone(),
+            parent_code: self.code.clone(),
+        };
+
+        for (i,th) in self.things.iter_mut().enumerate() {
+            if th.name == which {
+                thing = th.clone();
+                which_num = i;
+            }
+        }
+        if self.things[which_num].next == thing.next {
+            self.things.remove(which_num);
+            thing.next += list_mean*0.5;
+            let mut place = 0;
+            for (i,th) in self.things.iter().enumerate() {
+                if th.next <= thing.next {
+                    place = i+1;
+                }
+            }
+            self.things.insert(place, thing);
+        }
     }
 }
 
