@@ -622,6 +622,9 @@ input[type="text"]
     max-width: 20em;
     box-sizing: border-box;
 }
+.choose:hover {
+    cursor: pointer;
+}
 
 figure {
   clear: none;

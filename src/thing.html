@@ -1,7 +1,6 @@
 <form id="[% self.name as URL %]-choose" action="/choose-thing" method="post"
               target="hidden-form"
               onsubmit="setTimeout(function () { window.location.reload(); }, 500)">
-  <input type="submit" value="choose">
   <input type="hidden" name="name" value="[% self.name %]">
   <input type="hidden" name="list" value="[% self.parent_name %]">
   <input type="hidden" name="code" value="[% self.parent_code %]">
@@ -16,11 +15,12 @@
 </form>
 <a onclick="toggleView('[% self.name as URL %]');toggleView('[% self.name as URL %]-view')"><i class="material-icons">edit</i></a>
 [% if let Some(ref link) = self.link {
-  %]<a id="[% self.name as URL %]-view"
+  %]<a class="choose" id="[% self.name as URL %]-view"
        onclick="document.getElementById('[% self.name as URL
                 %]-choose').submit();" href="[% link as URL %]">[% self.name %]</a>[%
 } else {
-  %]<span id="[% self.name as URL %]-view">[% self.name %]</span>[%
+  %]<span class="choose" id="[% self.name as URL %]-view" onclick="document.getElementById('[% self.name as URL
+                %]-choose').submit(); setTimeout(function () { window.location.reload(); }, 500);">[% self.name %]</span>[%
 } %]
 <span id="[% self.name as URL %]" class="hide">
   <form action="/edit-thing" method="post"
