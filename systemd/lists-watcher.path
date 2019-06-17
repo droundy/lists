@@ -1,0 +1,5 @@
+[Path]
+PathModified=/root/lists/.git
+
+[Install]
+WantedBy=multi-user.target
