@@ -160,6 +160,12 @@ struct Thing {
 impl DisplayAs<HTML> for Thing {}
 
 impl Thing {
+    fn slug(&self) -> String {
+        self.name.replace("'", "-")
+            .replace(" ", "-")
+            .replace("\"", "-")
+            .replace("\\", "-")
+    }
     fn priority(&self) -> f64 {
         self.next
     }
