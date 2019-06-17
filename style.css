@@ -549,6 +549,10 @@ appears on the left side of the page.
 nav {
   color: #dddddd; }
 
+.hide {
+    display: none;
+}
+
 body > nav {
   background: #191818; }
   body > nav .menu-heading {

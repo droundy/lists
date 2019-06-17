@@ -1,5 +1,5 @@
 use warp::{Filter, path};
-use display_as::{with_template, format_as, display, HTML, UTF8, URL, DisplayAs};
+use display_as::{with_template, display, HTML, URL, DisplayAs};
 use serde_derive::{Deserialize, Serialize};
 
 mod atomicfile;
@@ -7,6 +7,13 @@ mod atomicfile;
 fn main() {
     let style_css = path!("style.css").and(warp::fs::file("style.css"));
     let js = path!("random-pass.js").and(warp::fs::file("random-pass.js"));
+    let edit = path!("edit-thing")
+        .and(warp::filters::body::form())
+        .map(|change: EditThing| {
+            println!("creating new thing {:?}", change);
+            change.edit();
+            "okay"
+        });
     let new = path!("new-thing")
         .and(warp::filters::body::form())
         .map(|change: NewThing| {
@@ -45,6 +52,7 @@ fn main() {
 
     warp::serve(style_css
                 .or(js)
+                .or(edit)
                 .or(new)
                 .or(choose)
                 .or(delay)
@@ -71,6 +79,7 @@ impl NewThing {
         let now = list.now();
         let newthing = Thing {
             name: self.name.clone(),
+            link: None,
             next: now,
             first_chosen: now,
             chosen: now,
@@ -104,9 +113,33 @@ impl ChooseThing {
     }
 }
 
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+struct EditThing {
+    code: String,
+    name: String,
+    list: String,
+    link: String,
+    newname: String,
+}
+
+impl EditThing {
+    fn edit(&self) {
+        println!("I am calling edit...");
+        let mut list = ThingList::read(&self.code, &self.list);
+        let th = list.edit(&self.name);
+        th.name = self.newname.clone();
+        if self.link.len() > 0 {
+            th.link = Some(self.link.clone());
+        }
+        list.save();
+    }
+}
+
 #[derive(Debug, Clone, Serialize, Deserialize)]
 struct Thing {
     name: String,
+    #[serde(default)]
+    link: Option<String>,
     created: f64,
     first_chosen: f64,
     chosen: f64,
@@ -191,6 +224,30 @@ impl ThingList {
             .expect("error creating save file");
         serde_yaml::to_writer(&f, &self.things).expect("error writing yaml")
     }
+    fn edit(&mut self, which: &str) -> &mut Thing {
+        let mut wh = self.things.len();
+        for (i,th) in self.things.iter().enumerate() {
+            if th.name == which {
+                wh = i;
+                break;
+            }
+        }
+        if wh == self.things.len() {
+            let now = self.now() + 1.0;
+            self.things.push(Thing {
+                name: which.to_string(),
+                link: None,
+                next: now,
+                first_chosen: now,
+                chosen: now,
+                created: now,
+                count: 0,
+                parent_name: self.name.clone(),
+                parent_code: self.code.clone(),
+            });
+        }
+        &mut self.things[wh]
+    }
     fn choose(&mut self, which: &str) {
         // print(
         // 'choosing: ${prettyTime(chosen)}  and  ${prettyDuration(meanInterval)}  and  ${prettyDuration(meanIntervalList)}');
@@ -198,7 +255,8 @@ impl ThingList {
         let list_mean = self.mean_interval();
         let mut which_num = 0;
         let mut thing = Thing {
-            name: self.name.clone(),
+            name: which.to_string(),
+            link: None,
             next: now,
             first_chosen: now,
             chosen: now,
@@ -245,6 +303,7 @@ impl ThingList {
         let mut which_num = 0;
         let mut thing = Thing {
             name: self.name.clone(),
+            link: None,
             next: now,
             first_chosen: now,
             chosen: now,
