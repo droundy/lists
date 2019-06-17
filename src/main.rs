@@ -1,10 +1,18 @@
 use warp::{Filter, path};
 use display_as::{with_template, display, HTML, URL, DisplayAs};
-use serde_derive::{Deserialize, Serialize};
+use serde::{Deserialize, Serialize};
+use clapme::ClapMe;
 
 mod atomicfile;
 
+#[derive(Debug, ClapMe, Serialize)]
+struct Flags {
+    /// Port to serve on, if not port 80.
+    port: Option<u16>,
+}
+
 fn main() {
+    let flags = Flags::from_args();
     let style_css = path!("style.css").and(warp::fs::file("style.css"));
     let js = path!("random-pass.js").and(warp::fs::file("random-pass.js"));
     let edit = path!("edit-thing")
@@ -59,7 +67,7 @@ fn main() {
                 .or(list)
                 .or(list_of_lists)
                 .or(index))
-        .run(([0, 0, 0, 0], 3000));
+        .run(([0, 0, 0, 0], flags.port.unwrap_or(80)));
 }
 
 struct Index {}
