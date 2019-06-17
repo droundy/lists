@@ -132,7 +132,6 @@ struct EditThing {
 
 impl EditThing {
     fn edit(&self) {
-        println!("I am calling edit...");
         let mut list = ThingList::read(&self.code, &self.list);
         let th = list.edit(&self.name);
         th.name = self.newname.clone();
