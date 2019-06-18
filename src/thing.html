@@ -8,7 +8,7 @@
 <form id="[% self.slug() %]-delay" action="/delay-thing" method="post"
               target="hidden-form"
               onsubmit="setTimeout(function () { window.location.reload(); }, 500)">
-  <input class="material-icons" type="submit" value="snooze">
+  <input class="material-icons" type="submit" value="watch_later">
   <input type="hidden" name="name" value="[% self.name %]">
   <input type="hidden" name="list" value="[% self.parent_name %]">
   <input type="hidden" name="code" value="[% self.parent_code %]">
