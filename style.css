@@ -23,6 +23,14 @@ main > ul {
     list-style-type: none;
     margin: 0;
     padding: 0;
+    padding-left: 2em;
+}
+
+main > ul li {
+  text-indent: -2em;
+}
+main > ul li a, main > ul li form {
+  text-indent: 0;
 }
 
 nav {
