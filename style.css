@@ -1,3 +1,7 @@
+body {
+    margin: 0;
+}
+
 header {
     background-color: #fff;
     text-align: center;
@@ -81,6 +85,9 @@ body > nav {
   form {
       display: inline;
   }
+  label {
+      display: inline-block;
+  }
 
 input[type=submit] {
   background-color: white;
@@ -94,60 +101,60 @@ input[type="text"]
     width: 100%;
     max-width: 20em;
     box-sizing: border-box;
+    display: inline-block;
 }
 .choose:hover, a:hover {
     cursor: pointer;
 }
 
-figure {
-  clear: none;
-  float: none;
-  width: 100%;
-  margin: 0;
-  padding: 0; }
-
-figcaption {
-  text-align: center; }
-
-@media screen {
-  body > nav {
+body > nav {
+    height: 2.5em;
+    min-width: 30em;
+}
+body > nav ul li {
+    display: block;
+    position: relative;
+    float: left;
+    margin: 0;
+    margin-right: 0.25em;
+    margin-left: 0.25em;
     height: 2em;
-    min-width: 30em; }
-    body > nav ul li {
-      display: block;
-      position: relative;
-      float: left;
-      margin: 0;
-      height: 2em; }
-    body > nav ul li a {
-      height: 2em;
-      padding-right: 0.25em;
-      padding-left: 0.25em;
-      border-right: .1em solid #000;
-      border-left: 0.2em solid #191818; }
-    body > nav ul li a.current:before,
-    body > nav ul li a.current:hover:before {
-      left: -0.4em; }
-    body > nav img {
-      height: 2em;
-      display: none;
-      float: left; } }
-  @media screen and (min-width: 27em) {
-    body > nav img {
-      display: block; } }
+}
+body > nav ul li a {
+    text-align: center;
+    height: 2em;
+    padding-right: 0.25em;
+    padding-left: 0.25em;
+    border-right: .1em solid #000;
+    border-left: 0.2em solid #191818;
+}
+body > nav ul li a.current:before,
+body > nav ul li a.current:hover:before {
+    left: -0.4em;
+}
+body > nav img {
+    height: 2em;
+    display: none;
+    float: left;
+}
 
-@media screen {
-    main {
-        width: auto;
-        margin-left: 0em;
-        margin-right: 0em;
-        float: none;
-        clear: none;
-        padding: 0 .5em;
+main {
+    width: auto;
+    margin-left: 0em;
+    margin-right: 0em;
+    float: none;
+    clear: none;
+    padding: 0;
+    display: block;
+    position: relative;
+}
+
+@media screen and (min-width: 27em) {
+    body > nav img {
         display: block;
-        position: relative;
     }
 }
+
 /* width 49 */
 @media screen and (min-width: 49em) {
   body > nav {

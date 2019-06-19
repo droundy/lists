@@ -17,8 +17,8 @@
     <ul>
       <li>
         <form id="pass-form" onsubmit="var name_element = document.getElementById('the-name'); window.location.href = '/[% self.code %]/'+name_element.value; return false;">
-          <label>New list</label>
-          <input type="text" name="name" id="the-name">
+          <!-- <label>New list</label> -->
+          <input type="text" name="name" id="the-name" placeholder="New list">
         </form>
       </li>
       [% for ch in read_lists(&self.code).iter() { %]

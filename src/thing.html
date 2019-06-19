@@ -1,18 +1,17 @@
 <form id="[% self.slug() %]-choose" action="/choose-thing" method="post"
-              target="hidden-form"
-              onsubmit="setTimeout(function () { window.location.reload(); }, 500)">
+              target="hidden-form">
   <input type="hidden" name="name" value="[% self.name %]">
   <input type="hidden" name="list" value="[% self.parent_name %]">
   <input type="hidden" name="code" value="[% self.parent_code %]">
 </form>
 <form id="[% self.slug() %]-delay" action="/delay-thing" method="post"
-              target="hidden-form"
-              onsubmit="setTimeout(function () { window.location.reload(); }, 500)">
-  <input class="material-icons" type="submit" value="watch_later">
+              target="hidden-form">
   <input type="hidden" name="name" value="[% self.name %]">
   <input type="hidden" name="list" value="[% self.parent_name %]">
   <input type="hidden" name="code" value="[% self.parent_code %]">
 </form>
+<a onclick="document.getElementById('[% self.slug()
+                %]-delay').submit(); setTimeout(function () { window.location.reload(); }, 500);"><i class="material-icons">watch_later</i></a>
 <a onclick="toggleView('[% self.slug() %]');toggleView('[% self.slug() %]-view')"><i class="material-icons">edit</i></a>
 [% if let Some(ref link) = self.link {
   %]<a class="choose" id="[% self.slug() %]-view"
