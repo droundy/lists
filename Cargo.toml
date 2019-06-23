@@ -19,5 +19,7 @@ rand = "0.6.4"
 bytes = "0.4.11"
 clapme = "0.1.13"
 
+percent-encoding = "1.0.1"
+
 pulldown-cmark = { version = "0.2.0", default-features = false }
 html2md = "0.2.5"

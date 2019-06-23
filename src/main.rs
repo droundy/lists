@@ -49,11 +49,17 @@ fn main() {
         });
     let list = path!(String / String)
         .map(|code: String, listname: String| {
+            let listname = percent_encoding::percent_decode(listname.as_bytes())
+                .decode_utf8().unwrap();
+            let code = percent_encoding::percent_decode(code.as_bytes())
+                .decode_utf8().unwrap();
             let x = ThingList::read(&code, &listname);
             display(HTML, &x).http_response()
         });
     let list_of_lists = path!(String)
         .map(|code: String| {
+            let code = percent_encoding::percent_decode(code.as_bytes())
+                .decode_utf8().unwrap();
             let x = ThingList::read(&code, "fixme");
             display(HTML, &x).http_response()
         });
