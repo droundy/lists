@@ -1,5 +1,5 @@
 use warp::{Filter, path};
-use display_as::{with_template, display, HTML, URL, DisplayAs};
+use display_as::{with_template, display, HTML, URL, UTF8, DisplayAs};
 use serde::{Deserialize, Serialize};
 use clapme::ClapMe;
 
@@ -14,7 +14,6 @@ struct Flags {
 fn main() {
     let flags = Flags::from_args();
     let style_css = path!("style.css").and(warp::fs::file("style.css"));
-    let js = path!("random-pass.js").and(warp::fs::file("random-pass.js"));
     let edit = path!("edit-thing")
         .and(warp::filters::body::form())
         .map(|change: EditThing| {
@@ -65,7 +64,6 @@ fn main() {
         });
 
     warp::serve(style_css
-                .or(js)
                 .or(edit)
                 .or(new)
                 .or(choose)
