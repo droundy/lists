@@ -51,7 +51,7 @@
     <form action="/search..." method="get"
           target="hidden-form"
     <label>Search</label>
-    <input type="text" id="search-id" name="search" oninput="var pat = document.getElementById('search-id'); if (pat == '') { pat = '.'; } replace_things('/[% self.code as URL %]/[% self.name as URL %]/search/'+pat.value);" autofocus>
+    <input type="text" id="search-id" name="search" oninput="var pat = document.getElementById('search-id').value; if (pat == '') { pat = 'qqq'; } replace_things('/[% self.code as URL %]/[% self.name as URL %]/search/'+pat);" autofocus>
     </form>
     <ul id="thingsid">
       <li>

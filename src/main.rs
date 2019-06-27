@@ -48,12 +48,11 @@ fn main() {
         });
     let search = path!(String / String / "search" / String)
         .map(|code: String, listname: String, pattern: String| {
-            println!("pattern is {}", pattern);
             let listname = percent_encoding::percent_decode(listname.as_bytes())
                 .decode_utf8().unwrap();
             let code = percent_encoding::percent_decode(code.as_bytes())
                 .decode_utf8().unwrap();
-            let pattern = if pattern == "." {
+            let pattern = if pattern != "qqq" {
                 percent_encoding::percent_decode(pattern.as_bytes())
                     .decode_utf8().unwrap()
             } else {
