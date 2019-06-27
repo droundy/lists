@@ -46,6 +46,22 @@ fn main() {
         .map(|_| {
             display(HTML, &Index {}).http_response()
         });
+    let search = path!(String / String / "search" / String)
+        .map(|code: String, listname: String, pattern: String| {
+            println!("pattern is {}", pattern);
+            let listname = percent_encoding::percent_decode(listname.as_bytes())
+                .decode_utf8().unwrap();
+            let code = percent_encoding::percent_decode(code.as_bytes())
+                .decode_utf8().unwrap();
+            let pattern = if pattern == "." {
+                percent_encoding::percent_decode(pattern.as_bytes())
+                    .decode_utf8().unwrap()
+            } else {
+                "".into()
+            };
+            let x = ThingsOnly(ThingList::read(&code, &listname).filter(&pattern));
+            display(HTML, &x).http_response()
+        });
     let list = path!(String / String)
         .map(|code: String, listname: String| {
             let listname = percent_encoding::percent_decode(listname.as_bytes())
@@ -68,6 +84,7 @@ fn main() {
                 .or(new)
                 .or(choose)
                 .or(delay)
+                .or(search)
                 .or(list)
                 .or(list_of_lists)
                 .or(index))
@@ -212,6 +229,12 @@ struct ThingList {
 #[with_template("[%" "%]" "things.html")]
 impl DisplayAs<HTML> for ThingList {}
 
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+struct ThingsOnly(ThingList);
+
+#[with_template("[%" "%]" "things-only.html")]
+impl DisplayAs<HTML> for ThingsOnly {}
+
 impl ThingList {
     fn read(code: &str, name: &str) -> Self {
         if let Ok(f) = ::std::fs::File::open(format!("data/{}/{}", code, name)) {
@@ -228,6 +251,10 @@ impl ThingList {
             name: name.to_string(),
             things: Vec::new(),
         }
+    }
+    fn filter(mut self, s: &str) -> Self {
+        self.things.retain(|x| x.name.contains(s));
+        self
     }
     fn now(&self) -> f64 {
         self.things.iter().map(|x| x.count as f64).sum()

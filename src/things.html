@@ -9,8 +9,25 @@
 </head>
 <body>
   <script>
+    function replace_things(url) {
+      var request = new XMLHttpRequest();
+      request.open('GET', url, true);
+      request.onload = function() {
+         if (request.status >= 200 && request.status < 400) {
+           // Success!
+           document.getElementById('thingsid').innerHTML = request.responseText;
+         } else {
+           // We reached our target server, but it returned an error
+           document.getElementById('thingsid').innerHTML = request.responseText;
+         }
+      };
+      request.onerror = function() {
+        // There was a connection error of some sort
+      };
+      request.send();
+    }
     function toggleView(id) {
-        document.getElementById(id).classList.toggle('hide');
+      document.getElementById(id).classList.toggle('hide');
     }
   </script>
   <nav>
@@ -31,7 +48,12 @@
       <h1>[% self.name %]</h1>
       <iframe style="display:none" name="hidden-form"></iframe>
     </header>
-    <ul>
+    <form action="/search..." method="get"
+          target="hidden-form"
+    <label>Search</label>
+    <input type="text" id="search-id" name="search" oninput="var pat = document.getElementById('search-id'); if (pat == '') { pat = '.'; } replace_things('/[% self.code as URL %]/[% self.name as URL %]/search/'+pat.value);" autofocus>
+    </form>
+    <ul id="thingsid">
       <li>
         <form action="/new-thing" method="post"
               target="hidden-form"

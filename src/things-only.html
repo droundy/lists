@@ -1,0 +1,17 @@
+<ul id="thingsid">
+  <li>
+    <form action="/new-thing" method="post"
+          target="hidden-form"
+          onsubmit="setTimeout(function () { window.location.reload(); }, 500)">
+      <label>New [% self.0.name %]</label>
+      <input type="text" name="name" autofocus>
+      <input type="hidden" name="list" value="[% self.0.name %]">
+      <input type="hidden" name="code" value="[% self.0.code %]">
+    </form>
+  </li>
+  [% for child in self.0.things.iter() {
+  %]<li>[% child %]</li>[%
+  } %]
+</ul>
+
+
