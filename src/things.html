@@ -33,14 +33,30 @@
   <nav>
     <ul>
       <li>
-        <form id="pass-form" onsubmit="var name_element = document.getElementById('the-name'); window.location.href = '/[% self.code %]/'+name_element.value; return false;">
+        <form id="pass-form"
+              autocomplete="off"
+              onsubmit="var name_element = document.getElementById('the-name'); window.location.href = '/[% self.code %]/'+name_element.value; return false;">
           <!-- <label>New list</label> -->
           <input type="text" name="name" id="the-name" placeholder="New list">
         </form>
       </li>
       [% for ch in read_lists(&self.code).iter() { %]
       <li><a href="/[% self.code %]/[% ch %]">[% ch %]</a></li>
-      [% } %]
+         [% } %]
+      <li>
+        <form action="/search..." method="get"
+              autocomplete="off"
+              target="hidden-form">
+              <label>Search</label>
+              <input type="text" id="search-id" name="search"
+                     oninput="var pat =
+                              document.getElementById('search-id').value;
+                              if (pat == '') { pat = 'qqq'; }
+                              replace_things('/[% self.code as URL
+                              %]/[% self.name as URL
+                              %]/search/'+pat);" autofocus>
+        </form>
+      </li>
     </ul>
   </nav>
   <main>
@@ -48,14 +64,10 @@
       <h1>[% self.name %]</h1>
       <iframe style="display:none" name="hidden-form"></iframe>
     </header>
-    <form action="/search..." method="get"
-          target="hidden-form"
-    <label>Search</label>
-    <input type="text" id="search-id" name="search" oninput="var pat = document.getElementById('search-id').value; if (pat == '') { pat = 'qqq'; } replace_things('/[% self.code as URL %]/[% self.name as URL %]/search/'+pat);" autofocus>
-    </form>
     <ul id="thingsid">
       <li>
         <form action="/new-thing" method="post"
+              autocomplete="off"
               target="hidden-form"
               onsubmit="setTimeout(function () { window.location.reload(); }, 500)">
           <label>New [% self.name %]</label>

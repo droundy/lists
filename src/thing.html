@@ -23,6 +23,7 @@
 } %]
 <span id="[% self.slug() %]" class="hide">
   <form action="/edit-thing" method="post"
+        autocomplete="off"
         target="hidden-form"
         onsubmit="setTimeout(function () { window.location.reload(); }, 500)">
     <input type="text" name="newname" value="[% self.name %]">
