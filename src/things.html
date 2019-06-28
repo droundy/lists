@@ -40,23 +40,30 @@
           <input type="text" name="name" id="the-name" placeholder="New list">
         </form>
       </li>
-      [% for ch in read_lists(&self.code).iter() { %]
-      <li><a href="/[% self.code %]/[% ch %]">[% ch %]</a></li>
-         [% } %]
+      [%
+        for ch in read_lists(&self.code).iter() {
+          if ch != &self.name {
+            %]<li><a href="/[% self.code %]/[% ch %]">[% ch %]</a></li>[%
+          }
+        }%]
       <li>
         <form action="/search..." method="get"
               autocomplete="off"
               target="hidden-form">
-              <label>Search</label>
+              <label><i class="material-icons">search</i></label>
               <input type="text" id="search-id" name="search"
                      oninput="var pat =
                               document.getElementById('search-id').value;
                               if (pat == '') { pat = 'qqq'; }
-                              replace_things('/[% self.code as URL
+                              replace_things('/search/[% self.code as URL
                               %]/[% self.name as URL
-                              %]/search/'+pat);" autofocus>
+                              %]/'+pat);" autofocus>
         </form>
       </li>
+      <li><a onclick="replace_things('/sort/[% self.code as URL
+                              %]/[% self.name as URL
+                              %]');"><i class="material-icons">sort</i></a>
+</li>
     </ul>
   </nav>
   <main>

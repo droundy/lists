@@ -46,7 +46,7 @@ fn main() {
         .map(|_| {
             display(HTML, &Index {}).http_response()
         });
-    let search = path!(String / String / "search" / String)
+    let search = path!("search" / String / String / String)
         .map(|code: String, listname: String, pattern: String| {
             let listname = percent_encoding::percent_decode(listname.as_bytes())
                 .decode_utf8().unwrap();
@@ -59,6 +59,17 @@ fn main() {
                 "".into()
             };
             let x = ThingsOnly(ThingList::read(&code, &listname).filter(&pattern));
+            display(HTML, &x).http_response()
+        });
+    let sort = path!("sort" / String / String)
+        .map(|code: String, listname: String| {
+            println!("I am sorting the list.");
+            let listname = percent_encoding::percent_decode(listname.as_bytes())
+                .decode_utf8().unwrap();
+            let code = percent_encoding::percent_decode(code.as_bytes())
+                .decode_utf8().unwrap();
+            let x = ThingsOnly(ThingList::read(&code, &listname).sorted());
+            println!("I am done sorting the list.");
             display(HTML, &x).http_response()
         });
     let list = path!(String / String)
@@ -83,6 +94,7 @@ fn main() {
                 .or(new)
                 .or(choose)
                 .or(delay)
+                .or(sort)
                 .or(search)
                 .or(list)
                 .or(list_of_lists)
@@ -253,6 +265,15 @@ impl ThingList {
     }
     fn filter(mut self, s: &str) -> Self {
         self.things.retain(|x| x.name.contains(s));
+        self
+    }
+    fn sorted(mut self) -> Self {
+        self.things.sort_by_key(|x| x.chosen as i64);
+        self.things.sort_by_key(|x| x.count as i64);
+        let now = self.now();
+        for (i,x) in self.things.iter_mut().enumerate() {
+            x.next = now + i as f64;
+        }
         self
     }
     fn now(&self) -> f64 {

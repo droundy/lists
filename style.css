@@ -33,69 +33,17 @@ main > ul li a, main > ul li form {
   text-indent: 0;
 }
 
-nav {
-  color: #dddddd; }
-
 .hide {
     display: none;
 }
 
-body > nav {
-  background: #191818; }
-  body > nav .menu-heading {
-    background: #1f8dd6; }
-  body > nav ul {
-    margin: 0;
-    padding: 0;
-    list-style-type: none;
-    display: block;
-    font-weight: bold;
-    line-height: 165%;
-    width: 100%; }
-  body > nav ul li {
-    margin: 0;
-    padding: 0;
-    border-top: 0.15em solid #191818;
-    border-bottom: 0.15em solid #000; }
-  body > nav ul li a {
-    display: block;
-    text-decoration: none;
-    color: #999;
-    background: #333;
-    padding: 0 0 0 1.25em;
-    width: 100%; }
-  body > nav ul li a:hover {
-    background: #000;
-    color: #acf; }
-  body > nav ul li a.current,
-  body > nav ul li a.current:hover {
-    background: #000;
-    color: #fff; }
-  body > nav ul li a.current:before,
-  body > nav ul li a.current:hover:before {
-    content: "";
-    position: absolute;
-    margin-top: 0.3em;
-    background: #1f8dd6;
-    height: 1em;
-    width: 1em;
-    line-height: 1em;
-    text-align: center;
-    font-weight: bold;
-    font-size: 1em;
-    -webkit-border-radius: 1em;
-    -moz-border-radius: 1em;
-    -ms-border-radius: 1em;
-    border-radius: 1em;
-    color: #fff;
-  }
-
-  form {
-      display: inline;
-  }
-  label {
-      display: inline-block;
-  }
+form {
+    display: inline;
+}
+label {
+    display: inline-block;
+    vertical-align: middle;
+}
 
 input[type=submit] {
   background-color: white;
@@ -115,20 +63,52 @@ input[type="text"]
     cursor: pointer;
 }
 
-body > nav {
-    height: 2.5em;
+nav {
+    min-height: 2.5em;
     min-width: 30em;
+
+    color: #dddddd;
+    background: #191818;
 }
-body > nav ul li {
+nav ul {
+    margin: 0;
+    padding: 0;
+    list-style-type: none;
     display: block;
-    position: relative;
-    float: left;
+    font-weight: bold;
+    line-height: 165%;
+    width: 100%;
+}
+nav ul li {
+    margin: 0;
+    padding: 0;
+    border-top: 0.15em solid #191818;
+    border-bottom: 0.15em solid #000;
+
+    display: inline-block;
+    /* position: relative; */
+    /* float: left; */
+    max-width: 20em;
+    width: auto;
     margin: 0;
     margin-right: 0.25em;
     margin-left: 0.25em;
     height: 2em;
 }
-body > nav ul li a {
+nav ul li a {
+    display: block;
+    text-decoration: none;
+    color: #999;
+    background: #333;
+    padding: 0 0 0 1.25em;
+    width: 100%;
+}
+nav ul li a:hover {
+    background: #000;
+    color: #acf;
+}
+
+nav ul li a {
     text-align: center;
     height: 2em;
     padding-right: 0.25em;
@@ -136,14 +116,13 @@ body > nav ul li a {
     border-right: .1em solid #000;
     border-left: 0.2em solid #191818;
 }
-body > nav ul li a.current:before,
-body > nav ul li a.current:hover:before {
+
+nav ul li a.current:before,
+nav ul li a.current:hover:before {
     left: -0.4em;
 }
-body > nav img {
-    height: 2em;
-    display: none;
-    float: left;
+nav ul li form input[type="text"] {
+    max-width: 11em;
 }
 
 main {
@@ -157,112 +136,102 @@ main {
     position: relative;
 }
 
-@media screen and (min-width: 27em) {
-    body > nav img {
+@media screen and (min-width: 49em) {
+    nav {
+        z-index: 1000;
+        overflow-y: auto;
+        top: 0;
+        bottom: 0;
+        -webkit-overflow-scrolling: touch;
+        position: fixed;
+        width: 12em;
+        left: 0em;
         display: block;
+
+        height: auto;
+        min-width: 0;
+    }
+    nav ul li {
+        display: block;
+        float: none;
+        margin: 0;
+        height: auto;
+        margin-left: 0.25em;
+    }
+    nav ul li a {
+        height: auto;
+        padding-left: 1em;
+        padding-right: 0;
+        width: 10em;
+    }
+    nav ul li a.current:before,
+    nav ul li a.current:hover:before {
+        left: 0;
+    }
+    nav img {
+        height: auto;
+        display: block;
+        float: none;
+    }
+
+    main {
+        width: auto;
+        margin-left: 12em;
+        margin-right: 0em;
+        float: none;
+        clear: none;
+        padding: 0 .5em;
+        display: block;
+        position: relative;
     }
 }
+/* /\* width 64 *\/ */
+/* @media screen and (min-width: 64em) { */
+/*     nav { */
+/*         z-index: 1000; */
+/*         overflow-y: auto; */
+/*         top: 0; */
+/*         bottom: 0; */
+/*         -webkit-overflow-scrolling: touch; */
+/*         position: fixed; */
+/*         width: 12em; */
+/*         left: 0em; */
+/*         display: block; */
+/*         height: auto; */
+/*         min-width: 0; */
+/*     } */
+/*     nav ul li { */
+/*         display: block; */
+/*         float: none; */
+/*         margin: 0; */
+/*         height: auto; */
+/*     } */
+/*     nav ul li a { */
+/*         height: auto; */
+/*         padding-left: 1em; */
+/*         padding-right: 0; */
+/*     } */
+/*     nav .menu-heading { */
+/*         width: 100%; */
+/*     } */
+/*     nav ul li a.current:before, */
+/*     nav ul li a.current:hover:before { */
+/*         left: 0; */
+/*     } */
+/*     nav img { */
+/*         height: auto; */
+/*         display: block; */
+/*         float: none; */
+/*     } */
 
-/* width 49 */
-@media screen and (min-width: 49em) {
-  body > nav {
-    z-index: 1000;
-    overflow-y: auto;
-    top: 0;
-    bottom: 0;
-    -webkit-overflow-scrolling: touch;
-    position: fixed;
-    width: 12em;
-    left: 0em;
-    display: block; }
-
-  body > nav {
-    height: auto;
-    min-width: 0; }
-    body > nav ul li {
-      display: block;
-      float: none;
-      margin: 0;
-      height: auto; }
-    body > nav ul li a {
-      height: auto;
-      padding-left: 1em;
-      padding-right: 0; }
-    body > nav .menu-heading {
-      width: 100%; }
-    body > nav ul li a.current:before,
-    body > nav ul li a.current:hover:before {
-      left: 0; }
-    body > nav img {
-      height: auto;
-      display: block;
-      float: none; }
-
-  main {
-    width: auto;
-    margin-left: 12em;
-    margin-right: 0em;
-    float: none;
-    clear: none;
-    padding: 0 .5em;
-    display: block;
-    position: relative; } }
-/* width 64 */
-@media screen and (min-width: 64em) {
-  body > nav {
-    z-index: 1000;
-    overflow-y: auto;
-    top: 0;
-    bottom: 0;
-    -webkit-overflow-scrolling: touch;
-    position: fixed;
-    width: 12em;
-    left: 0em;
-    display: block; }
-
-  body > nav {
-    height: auto;
-    min-width: 0; }
-    body > nav ul li {
-      display: block;
-      float: none;
-      margin: 0;
-      height: auto; }
-    body > nav ul li a {
-      height: auto;
-      padding-left: 1em;
-      padding-right: 0; }
-    body > nav .menu-heading {
-      width: 100%; }
-    body > nav ul li a.current:before,
-    body > nav ul li a.current:hover:before {
-      left: 0; }
-    body > nav img {
-      height: auto;
-      display: block;
-      float: none; }
-
-  main {
-    width: auto;
-    margin-left: 12em;
-    margin-right: 0;
-    float: none;
-    clear: none;
-    padding: 0 .5em;
-    display: block;
-    position: relative; } }
-@media screen and (min-width: 60em) {
-  #TOC {
-    margin-top: 5em;
-    float: right; } }
-@media screen and (min-width: 65em) {
-  article {
-    margin-left: 2em;
-    margin-right: 5em; } }
-@media screen and (min-width: 40em) {
-  figure {
-    clear: right;
-    float: right;
-    width: 50%;
-    margin: 0;
-    padding: 0; } }
+/*     main { */
+/*         width: auto; */
+/*         margin-left: 12em; */
+/*         margin-right: 0; */
+/*         float: none; */
+/*         clear: none; */
+/*         padding: 0 .5em; */
+/*         display: block; */
+/*         position: relative; */
+/*     } */
+/* } */
