@@ -11,6 +11,10 @@ struct Flags {
     port: Option<u16>,
 }
 
+fn percent_decode(x: &str) -> String {
+    percent_encoding::percent_decode(x.as_bytes()).decode_utf8().unwrap().to_string()
+}
+
 fn main() {
     let flags = Flags::from_args();
     let style_css = path!("style.css").and(warp::fs::file("style.css"));
@@ -32,15 +36,17 @@ fn main() {
         .and(warp::filters::body::form())
         .map(|change: ChooseThing| {
             println!("choosing thing {:?}", change);
-            change.choose();
-            "okay"
+            display(HTML, &change.choose()).http_response()
         });
-    let delay = path!("delay-thing")
-        .and(warp::filters::body::form())
-        .map(|change: ChooseThing| {
+    let delay = path!("pass" / String / String / String)
+        .map(|code: String, list: String, name: String| {
+            let change = ChooseThing {
+                code: percent_decode(&code),
+                name: percent_decode(&name),
+                list: percent_decode(&list),
+            };
             println!("delay thing {:?}", change);
-            change.delay();
-            "okay"
+            display(HTML, &change.delay()).http_response()
         });
     let index = (warp::path::end().or(path!("index.html")))
         .map(|_| {
@@ -141,15 +147,17 @@ struct ChooseThing {
 }
 
 impl ChooseThing {
-    fn choose(&self) {
+    fn choose(&self) -> ThingsOnly {
         let mut list = ThingList::read(&self.code, &self.list);
         list.choose(&self.name);
         list.save();
+        ThingsOnly(list)
     }
-    fn delay(&self) {
+    fn delay(&self) -> ThingsOnly {
         let mut list = ThingList::read(&self.code, &self.list);
         list.delay(&self.name);
         list.save();
+        ThingsOnly(list)
     }
 }
 
@@ -274,6 +282,7 @@ impl ThingList {
         for (i,x) in self.things.iter_mut().enumerate() {
             x.next = now + i as f64;
         }
+        self.save();
         self
     }
     fn now(&self) -> f64 {
@@ -383,16 +392,21 @@ impl ThingList {
                 which_num = i;
             }
         }
-        if self.things[which_num].next == thing.next {
+        if which_num == self.things.len() - 1 {
+            // It is already last, no point delaying!
+            return;
+        }
+        while self.things[which_num].name == which {
+            // Checking that the thing was actually found and hasn't yet moved
             self.things.remove(which_num);
-            thing.next += list_mean*0.5;
+            thing.next += (list_mean+1.0)*0.5;
             let mut place = 0;
             for (i,th) in self.things.iter().enumerate() {
                 if th.next <= thing.next {
                     place = i+1;
                 }
             }
-            self.things.insert(place, thing);
+            self.things.insert(place, thing.clone());
         }
     }
 }
