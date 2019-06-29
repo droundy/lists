@@ -1,20 +1,17 @@
-<form id="[% self.slug() %]-choose" action="/choose-thing" method="post"
-              target="hidden-form">
-  <input type="hidden" name="name" value="[% self.name %]">
-  <input type="hidden" name="list" value="[% self.parent_name %]">
-  <input type="hidden" name="code" value="[% self.parent_code %]">
-</form>
 <a onclick="replace_things('/pass/[% self.parent_code as URL %]/[%
                                      self.parent_name as URL %]/[%
                                      self.name as URL %]')"><i class="material-icons">watch_later</i></a>
 <a onclick="toggleView('[% self.slug() %]');toggleView('[% self.slug() %]-view')"><i class="material-icons">edit</i></a>
 [% if let Some(ref link) = self.link {
   %]<a class="choose" id="[% self.slug() %]-view"
-       onclick="document.getElementById('[% self.slug()
-                %]-choose').submit();" href="[% link as URL %]">[% self.name %]</a>[%
+       onclick="replace_things('/choose/[% self.parent_code as URL %]/[%
+                                        self.parent_name as URL %]/[%
+                                        self.name as URL %]');" href="[% link as URL %]">[% self.name %]</a>[%
 } else {
-  %]<span class="choose" id="[% self.slug() %]-view" onclick="document.getElementById('[% self.slug()
-                %]-choose').submit(); setTimeout(function () { window.location.reload(); }, 500);">[% self.name %]</span>[%
+  %]<span class="choose" id="[% self.slug() %]-view"
+          onclick="replace_things('/choose/[% self.parent_code as URL %]/[%
+                                              self.parent_name as URL %]/[%
+                                              self.name as URL %]');">[% self.name %]</span>[%
 } %] <i>[% self.next %]</i>
 <span id="[% self.slug() %]" class="hide">
   <form action="/edit-thing" method="post"

@@ -32,9 +32,13 @@ fn main() {
             change.save();
             "okay"
         });
-    let choose = path!("choose-thing")
-        .and(warp::filters::body::form())
-        .map(|change: ChooseThing| {
+    let choose = path!("choose" / String / String / String)
+        .map(|code: String, list: String, name: String| {
+            let change = ChooseThing {
+                code: percent_decode(&code),
+                name: percent_decode(&name),
+                list: percent_decode(&list),
+            };
             println!("choosing thing {:?}", change);
             display(HTML, &change.choose()).http_response()
         });
