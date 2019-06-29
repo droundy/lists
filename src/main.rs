@@ -372,7 +372,6 @@ impl ThingList {
         // print(
         // 'choosing: ${prettyTime(chosen)}  and  ${prettyDuration(meanInterval)}  and  ${prettyDuration(meanIntervalList)}');
         let now = self.now() + 1.0;
-        let list_mean = self.mean_interval();
         let mut which_num = 0;
         let mut thing = Thing {
             name: self.name.clone(),
@@ -396,10 +395,11 @@ impl ThingList {
             // It is already last, no point delaying!
             return;
         }
+        let delay_time = if self.things.len() < 10 { self.things.len() as f64*0.5 } else { 10. };
         while self.things[which_num].name == which {
             // Checking that the thing was actually found and hasn't yet moved
             self.things.remove(which_num);
-            thing.next += (list_mean+1.0)*0.5;
+            thing.next += delay_time;
             let mut place = 0;
             for (i,th) in self.things.iter().enumerate() {
                 if th.next <= thing.next {
