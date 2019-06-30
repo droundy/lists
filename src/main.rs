@@ -261,7 +261,9 @@ impl DisplayAs<HTML> for ThingsOnly {}
 impl ThingList {
     fn read(code: &str, name: &str) -> Self {
         if let Ok(f) = ::std::fs::File::open(format!("data/{}/{}", code, name)) {
-            if let Ok(s) = serde_yaml::from_reader::<_,Vec<Thing>>(&f) {
+            if let Ok(mut s) = serde_yaml::from_reader::<_,Vec<Thing>>(&f) {
+                // Anything that has an empty name should just be deleted...
+                s.retain(|x| x.name.len() > 0);
                 return ThingList {
                     code: code.to_string(),
                     name: name.to_string(),
