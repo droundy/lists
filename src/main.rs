@@ -9,6 +9,8 @@ mod atomicfile;
 struct Flags {
     /// Port to serve on, if not port 80.
     port: Option<u16>,
+    /// Domain to serve on using https
+    domain: Option<String>,
 }
 
 fn percent_decode(x: &str) -> String {
@@ -99,17 +101,31 @@ fn main() {
             display(HTML, &x).http_response()
         });
 
-    warp::serve(style_css
-                .or(edit)
-                .or(new)
-                .or(choose)
-                .or(delay)
-                .or(sort)
-                .or(search)
-                .or(list)
-                .or(list_of_lists)
-                .or(index))
-        .run(([0, 0, 0, 0], flags.port.unwrap_or(80)));
+    if let Some(domain) = flags.domain {
+        lets_encrypt_warp::lets_encrypt(style_css
+                                        .or(edit)
+                                        .or(new)
+                                        .or(choose)
+                                        .or(delay)
+                                        .or(sort)
+                                        .or(search)
+                                        .or(list)
+                                        .or(list_of_lists)
+                                        .or(index),
+                                        &domain);
+    } else {
+        warp::serve(style_css
+                    .or(edit)
+                    .or(new)
+                    .or(choose)
+                    .or(delay)
+                    .or(sort)
+                    .or(search)
+                    .or(list)
+                    .or(list_of_lists)
+                    .or(index))
+            .run(([0, 0, 0, 0], flags.port.unwrap_or(80)));
+    }
 }
 
 struct Index {}
