@@ -15,7 +15,7 @@ warp = "0.1.9"
 display-as = { version = "0.4.3", features = ["warp"] }
 simple-error = "0.1.9"
 dot = "0.1.4"
-rand = "0.6.4"
+rand = "0.7.0"
 bytes = "0.4.11"
 clapme = "0.1.13"
 memorable-wordlist = "0.1.5"
