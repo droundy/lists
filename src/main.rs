@@ -422,7 +422,7 @@ impl ThingList {
         while self.things[which_num].name == which {
             // Checking that the thing was actually found and hasn't yet moved
             self.things.remove(which_num);
-            thing.next += thing.delay_time(self);
+            thing.next += thing.delay_time(self)*(0.1 + 0.9*rand::random::<f64>());
             let mut place = 0;
             for (i,th) in self.things.iter().enumerate() {
                 if th.next <= thing.next {

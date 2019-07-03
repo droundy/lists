@@ -12,7 +12,7 @@
           onclick="replace_things('/choose/[% self.parent_code as URL %]/[%
                                               self.parent_name as URL %]/[%
                                               self.name as URL %]');">[% self.name %]</span>[%
-} %] <i>[% self.next %]</i>
+} %] <i>[% format!("{:.2}", self.next) %]</i>
 <span id="[% self.slug() %]" class="hide">
   <form action="/edit-thing" method="post"
         autocomplete="off"
