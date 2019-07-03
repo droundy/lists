@@ -235,6 +235,18 @@ impl Thing {
             (self.chosen - self.first_chosen) / (self.count as f64 - 1.0)
         }
     }
+    fn delay_time(&self, list: &ThingList) -> f64 {
+        if self.count > 1 {
+            geometric_mean(&[list.now() - self.chosen,
+                             self.mean_interval(),
+                             list.mean_interval()])
+        } else if self.count == 1 {
+            geometric_mean(&[list.now() - self.chosen,
+                             list.mean_interval()])
+        } else {
+            list.mean_interval()
+        }
+    }
 }
 
 fn read_lists(code: &str) -> Vec<String> {
@@ -311,7 +323,7 @@ impl ThingList {
         self.things.iter().map(|x| x.count as f64).sum()
     }
     fn mean_interval(&self) -> f64 {
-        (self.now()+1.0)/((self.things.len()+1) as f64)
+        self.things.len() as f64
     }
     fn save(&self) {
         let f = atomicfile::AtomicFile::create(format!("data/{}/{}",
@@ -347,7 +359,6 @@ impl ThingList {
         // print(
         // 'choosing: ${prettyTime(chosen)}  and  ${prettyDuration(meanInterval)}  and  ${prettyDuration(meanIntervalList)}');
         let now = self.now() + 1.0;
-        let list_mean = self.mean_interval();
         let mut which_num = 0;
         let mut thing = Thing {
             name: which.to_string(),
@@ -360,20 +371,11 @@ impl ThingList {
             parent_name: self.name.clone(),
             parent_code: self.code.clone(),
         };
-        for (i,th) in self.things.iter_mut().enumerate() {
+        for (i,th) in self.things.iter().enumerate() {
             if th.name == which {
                 thing = th.clone();
                 which_num = i;
-                let last_interval = now - thing.chosen;
-                thing.next = if thing.count > 1 {
-                    now + geometric_mean(&[last_interval,
-                                           thing.mean_interval(),
-                                           list_mean])
-                } else if thing.count == 1 {
-                    now + geometric_mean(&[last_interval, list_mean])
-                } else {
-                    now + list_mean
-                };
+                thing.next = now + thing.delay_time(self);
                 thing.chosen = now;
                 thing.count += 1;
                 if thing.count == 1 {
@@ -417,11 +419,10 @@ impl ThingList {
             // It is already last, no point delaying!
             return;
         }
-        let delay_time = if self.things.len() < 10 { self.things.len() as f64*0.5 } else { 10. };
         while self.things[which_num].name == which {
             // Checking that the thing was actually found and hasn't yet moved
             self.things.remove(which_num);
-            thing.next += delay_time;
+            thing.next += thing.delay_time(self);
             let mut place = 0;
             for (i,th) in self.things.iter().enumerate() {
                 if th.next <= thing.next {

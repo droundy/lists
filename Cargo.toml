@@ -19,7 +19,7 @@ rand = "0.6.4"
 bytes = "0.4.11"
 clapme = "0.1.13"
 memorable-wordlist = "0.1.5"
-lets-encrypt-warp = "0.0.1"
+lets-encrypt-warp = "0.0.2"
 
 percent-encoding = "1.0.1"
 
