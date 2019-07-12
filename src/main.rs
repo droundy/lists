@@ -19,7 +19,9 @@ fn percent_decode(x: &str) -> String {
 
 fn main() {
     let flags = Flags::from_args();
-    let style_css = path!("style.css").and(warp::fs::file("style.css"));
+    let style_css = path!("style.css").map(|| {
+        include_str!("../style.css")
+    });
     let edit = path!("edit-thing")
         .and(warp::filters::body::form())
         .map(|change: EditThing| {
