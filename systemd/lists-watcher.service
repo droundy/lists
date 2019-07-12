@@ -6,7 +6,6 @@ After=network.target
 Type=oneshot
 ExecStart=/bin/systemctl restart lists.service
 User=root
-WorkingDirectory=/root/lists
 
 [Install]
 WantedBy=multi-user.target

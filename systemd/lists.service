@@ -6,9 +6,9 @@ StartLimitIntervalSec=0
 [Service]
 Type=simple
 Restart=always
-RestartSec=1
+RestartSec=10
 User=root
-ExecStart=/root/.cargo/bin/cargo run
+ExecStart=/home/droundy/lists/target/release/thing-lists --domain lists.for-our.info
 WorkingDirectory=/root/lists
 
 [Install]
