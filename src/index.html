@@ -5,8 +5,16 @@
   <link rel="stylesheet" href="/style.css">
   <script type="text/javascript">[% memorable_wordlist::JAVASCRIPT as UTF8 %]</script>
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <script src="https://unpkg.com/codeflask/build/codeflask.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.15.0/components/prism-pug.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/ace/1.4.5/ace.js" type="text/javascript" charset="utf-8"></script>
+  <style type="text/css" media="screen">
+    #editor {
+        position: absolute;
+        top: 0;
+        right: 0;
+        bottom: 0;
+        left: 0;
+    }
+</style>
 </head>
 <body>
   <main>
@@ -38,10 +46,13 @@
     </form>
     <iframe style="display:none" name="hidden-form"></iframe>
   </main>
-  <div id="test"></div>
+  <div id="editor">function foo(items) {
+    var x = "All this is syntax highlighted";
+    return x;
+}</div>
   <script>
-    import CodeFlask from 'codeflask';
-    const flask = new CodeFlask('#test', { language: 'js' });
+    var editor = ace.edit("editor");
+    editor.session.setMode("ace/mode/latex");
   </script>
 </body>
 </html>
