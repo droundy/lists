@@ -5,6 +5,7 @@
   <link rel="stylesheet" href="/style.css">
   <script type="text/javascript">[% memorable_wordlist::JAVASCRIPT as UTF8 %]</script>
   <meta name="viewport" content="width=device-width, initial-scale=1">
+  <script src="https://unpkg.com/codeflask/build/codeflask.min.js"></script>
 </head>
 <body>
   <main>
@@ -36,6 +37,11 @@
     </form>
     <iframe style="display:none" name="hidden-form"></iframe>
   </main>
+  <div id="test"></div>
+  <script>
+    import CodeFlask from 'codeflask';
+    const flask = new CodeFlask('#test', { language: 'js' });
+  </script>
 </body>
 </html>
 
