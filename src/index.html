@@ -43,9 +43,12 @@
       <input type="text" name="name" id="the-name">
     </form>
     <iframe style="display:none" name="hidden-form"></iframe>
-    <textarea id="textarea">\section{Test}
+    <form id="oops"
+          target="hidden-form">
+      <textarea id="textarea">\section{Test}
 This is \emph{nice} \LaTeX.
-</textarea>
+      </textarea>
+    </form>
   </main>
     <script>
     ta = document.querySelector('#textarea')
