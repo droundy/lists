@@ -52,8 +52,8 @@ This is \emph{nice} \LaTeX.
     var editordiv = document.createElement('div');
     editordiv.innerHTML = ta.value;
     editordiv.style.position = 'absolute';
-    editordiv.style.width = ta.width();
-    editordiv.style.height = ta.height();
+    editordiv.style.width = ta.width;
+    editordiv.style.height = ta.height;
     editordiv.style.className = ta.className;
     ta.parentNode.insertBefore(editordiv, ta);
     ta.style.display = 'none';
