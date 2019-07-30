@@ -43,31 +43,14 @@
       <input type="text" name="name" id="the-name">
     </form>
     <iframe style="display:none" name="hidden-form"></iframe>
-    <form id="oops"
-          target="hidden-form">
-      <textarea id="textarea">\section{Test}
+    <div id="editor">\section{Test}
 This is \emph{nice} \LaTeX.
-      </textarea>
-    </form>
+</div>
   </main>
-    <script>
-    ta = document.querySelector('#textarea')
-    var editordiv = document.createElement('div');
-    editordiv.innerHTML = ta.value;
-    editordiv.style.position = 'absolute';
-    editordiv.style.width = ta.width;
-    editordiv.style.height = ta.height;
-    editordiv.style.className = ta.className;
-    ta.parentNode.insertBefore(editordiv, ta);
-    ta.style.display = 'none';
-
-    var editor = ace.edit(editordiv);
+  <script>
+    var editor = ace.edit("editor");
     editor.session.setMode("ace/mode/latex");
     editor.renderer.setShowGutter(false);
-
-    ta.closest('form').submit(function () {
-        ta.val(editor.getSession().getValue());
-    })
   </script>
 </body>
 </html>
