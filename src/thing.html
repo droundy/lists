@@ -6,7 +6,7 @@
   %]<a class="choose" id="[% self.slug() %]-view"
        onclick="replace_things('/choose/[% self.parent_code as URL %]/[%
                                         self.parent_name as URL %]/[%
-                                        self.name as URL %]');" href="[% link as URL %]">[% self.name %]</a>[%
+                                        self.name as URL %]');" href="[% link as UTF8 %]">[% self.name %]</a>[%
 } else {
   %]<span class="choose" id="[% self.slug() %]-view"
           onclick="replace_things('/choose/[% self.parent_code as URL %]/[%
