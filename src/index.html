@@ -9,8 +9,12 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/ace/1.4.5/mode-latex.js" type="text/javascript" charset="utf-8"></script>
   <style type="text/css" media="screen">
     #editor {
-        width: 100%;
+        width: 50%;
         height: 12em;
+    }
+    #preview {
+      width: 50%,
+      float: right;
     }
 </style>
 </head>
@@ -45,12 +49,18 @@
     <iframe style="display:none" name="hidden-form"></iframe>
     <div id="editor">\section{Test}
 This is \emph{nice} \LaTeX.
-</div>
+    </div>
+    <div class="preview", id="preview">
+    </div>
   </main>
   <script>
+    var preview = document.querySelector('#preview');
     var editor = ace.edit("editor");
     editor.session.setMode("ace/mode/latex");
     editor.renderer.setShowGutter(false);
+    editor.session.on('change', function(delta) {
+        preview.innerHTML = editor.getValue();
+    });
   </script>
 </body>
 </html>
