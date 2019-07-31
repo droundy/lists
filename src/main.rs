@@ -28,6 +28,39 @@ fn main() {
            .body(STYLE)
            .unwrap())
     });
+    let render = path!("render")
+        .and(warp::body::content_length_limit(1024 * 32))
+        .and(warp::body::concat())
+        .map(|full_body: warp::body::FullBody| {
+            // FullBody is a `Buf`, which could have several non-contiguous
+            // slices of memory...
+            use bytes::buf::Buf;
+            let body: Vec<u8> = full_body.collect();
+            let mut child = std::process::Command::new("./problem")
+                .args(&["--format", "html", "--check"])
+                .stdin(std::process::Stdio::piped())
+                .stdout(std::process::Stdio::piped())
+                .stderr(std::process::Stdio::piped())
+                .spawn()
+                .expect("trouble running script.");
+            {
+                use std::io::Write;
+                let stdin = child.stdin.as_mut().expect("Failed to open stdin");
+                stdin.write_all(&body).expect("Failed to write to stdin");
+            }
+            let output = child.wait_with_output().expect("Failed to read stdout");
+            if output.stderr.len() > 0 {
+                let mut v = Vec::new();
+                v.extend_from_slice(b"\n<span class=\"error\">\n");
+                v.extend_from_slice(&output.stderr);
+                v.extend_from_slice(b"\n</span>\n");
+                v.extend_from_slice(&output.stdout);
+                v
+            } else {
+                println!("No errors:\n{}\n", String::from_utf8_lossy(&output.stdout));
+                output.stdout
+            }
+        });
     let edit = path!("edit-thing")
         .and(warp::filters::body::form())
         .map(|change: EditThing| {
@@ -64,6 +97,7 @@ fn main() {
         });
     let index = (warp::path::end().or(path!("index.html")))
         .map(|_| {
+            println!("I am doing index.");
             display(HTML, &Index {}).http_response()
         });
     let search = path!("search" / String / String / String)
@@ -103,6 +137,7 @@ fn main() {
         });
     let list_of_lists = path!(String)
         .map(|code: String| {
+            println!("list of lists: {}", code);
             let code = percent_encoding::percent_decode(code.as_bytes())
                 .decode_utf8().unwrap();
             let x = ThingList::read(&code, "fixme");
@@ -111,6 +146,7 @@ fn main() {
 
     if let Some(domain) = flags.domain {
         lets_encrypt_warp::lets_encrypt(style_css
+                                        .or(render)
                                         .or(edit)
                                         .or(new)
                                         .or(choose)
@@ -123,6 +159,7 @@ fn main() {
                                         &domain);
     } else {
         warp::serve(style_css
+                    .or(render)
                     .or(edit)
                     .or(new)
                     .or(choose)

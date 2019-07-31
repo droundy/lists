@@ -1,0 +1,106 @@
+#!/usr/bin/python3
+
+import pypandoc, argparse, sys, subprocess
+
+parser = argparse.ArgumentParser(description='Convert problems to nice formats.')
+parser.add_argument('--format', choices=['html', 'tex', 'pdf'], help='choose format',
+                    required=True)
+parser.add_argument('--solution', help='show solutions',
+                    action='store_const', const=True)
+parser.add_argument('--check', help='check for unsupported macros',
+                    action='store_const', const=True)
+parser.add_argument('--pk', help='primary key for database')
+
+args = parser.parse_args()
+
+def get_latex():
+    if args.pk is None:
+        return sys.stdin.buffer.read()
+    else:
+        with subprocess.Popen(['mysql', '-u', 'osubash', '-ss','-N', '-H','-e',
+                               'select problem_latex from osu_production.admin_app_problem where id = ' + str(args.pk)],
+                              stdout=subprocess.PIPE) as proc:
+            rawstuff = proc.stdout.read()
+            return rawstuff[28:-18]
+
+latex = get_latex() # sys.stdin.buffer.read()
+
+if args.check:
+    import re
+    environments = re.compile(rb'\\begin{([^\}]+)}')
+    environments = set(environments.findall(latex))
+    environments.difference_update({b'solution', b'enumerate',
+                                    b'equation', b'equation*',
+                                    b'align', b'align*'})
+    # Unsupported environments.  I'm not actually aware of anything
+    # that pandoc cannot handle or that we will not want to permit.
+    badenvironments = set()
+    if len(environments.intersection(badenvironments)) > 0:
+        for e in environments.intersection(badenvironments):
+            print('bad environment!', e, file=sys.stderr)
+        exit(1)
+    for e in environments:
+        print('possibly bad environment:', e, file=sys.stderr)
+
+    macros = re.compile(rb'\\([^0-9_/|><\\$\-+\s\(\)\[\]{}]+)')
+    macros = set(macros.findall(latex))
+    # The following is a whitelist of definitely non-problematic
+    # macros.  I'm not sure when if ever we want to enforce only
+    # macros on this whitelist.  For now I'm figuring to warn on
+    # anything outside the list.  Ideally we'd have a list of macros
+    # that pandoc understands and use that, but we also would need a
+    # list of things MathJax understands, since pandoc can effectively
+    # pass along any math symbols without understanding them, so long
+    # as MathJax *does* understand them.
+    macros.difference_update({b'begin', b'end', b'includegraphics',
+                              b'columnwidth', b'textwidth', b'item',
+                              b'noindent', b'paragraph', b'emph',
+                              b'psi', b'Psi', b'textit',
+                              b'"o', b'"u', b'&', b'%', b'left', b'right',
+                              b'frac', b'pm', b';', b',', b'text',
+                              b'it', b'em'})
+    # Unsupported macros.
+    badmacros = {b'section', b'section*', # could mess up problem set layout
+                 b'newcommand', b'renewcommand', # supported by pandoc, but have namespacing issues.
+                 b'newenvironment,' # supported by pandoc, but have namespacing issues.
+                 b'usepackage,' # big can of worms
+                 b'def,' # unsupported by pandoc and namespacing issues
+                 b'cases,' # old cases that doesn't work with amsmath
+    }
+    if len(macros.intersection(badmacros)) > 0:
+        for m in macros.intersection(badmacros):
+            print('bad macro!', m, file=sys.stderr)
+        exit(1)
+    for m in macros:
+        print('possibly bad macro:', m, file=sys.stderr)
+
+def write_latex(f):
+    chunks = latex.split(rb'\begin{solution}')
+    f.write(chunks[0])
+    chunks = chunks[1:]
+    if args.solution:
+        for c in chunks:
+            f.write(rb'\paragraph*{Solution}{\it ')
+            solution, problem = c.split(rb'\end{solution}')
+            f.write(solution)
+            f.write(rb'}')
+            f.write(problem)
+    else:
+        for c in chunks:
+            f.write(c.split(rb'\end{solution}')[1])
+
+if args.format == 'tex':
+    with subprocess.Popen(['pandoc', '-R', '-f','latex', '-t','latex',
+                           '--template',sys.argv[0]+'.tex'], stdin=subprocess.PIPE) as proc:
+        write_latex(proc.stdin)
+elif args.format == 'html':
+    with subprocess.Popen(['pandoc','--mathjax','-f','latex', '-t', args.format], stdin=subprocess.PIPE) as proc:
+        write_latex(proc.stdin)
+elif args.format != 'pdf':
+    with subprocess.Popen(['pandoc','-f','latex', '-t', args.format], stdin=subprocess.PIPE) as proc:
+        write_latex(proc.stdin)
+else:
+    with subprocess.Popen(['pandoc', '-R', '-f','latex', '-t','latex',
+                           '-o',sys.argv[0]+'.stdout.pdf',
+                           '--template',sys.argv[0]+'.tex'], stdin=subprocess.PIPE) as proc:
+        write_latex(proc.stdin)

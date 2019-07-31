@@ -7,14 +7,33 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <script src="https://cdnjs.cloudflare.com/ajax/libs/ace/1.4.5/ace.js" type="text/javascript" charset="utf-8"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/ace/1.4.5/mode-latex.js" type="text/javascript" charset="utf-8"></script>
+  <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.2/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+  <script type="text/x-mathjax-config">
+    MathJax.Hub.Config({
+      TeX: { equationNumbers: { autoNumber: "AMS" } },
+      "HTML-CSS": { availableFonts: ["TeX"] }
+    });
+    MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
+      MathJax.Hub.Insert(MathJax.InputJax.TeX.Definitions.macros,{
+        cancel: ["Extension","cancel"],
+        bcancel: ["Extension","cancel"],
+        xcancel: ["Extension","cancel"],
+        cancelto: ["Extension","cancel"]
+      });
+    });
+  </script>
   <style type="text/css" media="screen">
     #editor {
-        width: 50%;
+        width: 45%;
         height: 12em;
     }
     #preview {
-      width: 50%,
+      background-color: #ffdddd;
+      width: 45%;
       float: right;
+    }
+    .error {
+        background-color: #ff6666;
     }
 </style>
 </head>
@@ -47,19 +66,46 @@
       <input type="text" name="name" id="the-name">
     </form>
     <iframe style="display:none" name="hidden-form"></iframe>
-    <div id="editor">\section{Test}
-This is \emph{nice} \LaTeX.
-    </div>
     <div class="preview", id="preview">
+    </div>
+    <div id="editor">\paragraph{Test}
+This is \emph{nice} \LaTeX.
+\begin{align}
+f(x) &= x^2 + e^x \\
+g(x) &= \frac1{1+x^2}
+\end{align}
     </div>
   </main>
   <script>
-    var preview = document.querySelector('#preview');
+    function update_preview(latex) {
+        var request = new XMLHttpRequest();
+        request.open('POST', '/render');
+        request.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
+        request.onload = function() {
+            console.log('request', request);
+            if (request.status >= 200 && request.status < 400) {
+                // Success!
+                document.getElementById('preview').innerHTML = request.responseText;
+            } else {
+                // We reached our target server, but it returned an error
+                document.getElementById('preview').innerHTML = request.responseText;
+            }
+            MathJax.Hub.Queue(["Typeset",MathJax.Hub]);
+        };
+        request.onerror = function() {
+            // There was a connection error of some sort
+        };
+        request.send(latex);
+    }
+
+    var preview = document.getElementById('preview');
     var editor = ace.edit("editor");
     editor.session.setMode("ace/mode/latex");
     editor.renderer.setShowGutter(false);
+    update_preview(editor.getValue());
     editor.session.on('change', function(delta) {
-        preview.innerHTML = editor.getValue();
+        // preview.innerHTML = editor.getValue();
+        update_preview(editor.getValue());
     });
   </script>
 </body>
