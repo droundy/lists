@@ -1,5 +1,5 @@
 [Path]
-PathModified=/home/droundy/lists/target/release/thing-lists
+PathModified=/home/droundy/thing-lists
 
 [Install]
 WantedBy=multi-user.target

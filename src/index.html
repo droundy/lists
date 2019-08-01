@@ -105,27 +105,11 @@ var Preview = {
   //  the results of running MathJax are more accurate that way.)
   //
     SwapBuffers: function () {
-        console.log("now I am swapping buggers");
     var buffer = this.preview, preview = this.buffer;
     this.buffer = buffer; this.preview = preview;
     buffer.style.visibility = "hidden"; // buffer.style.position = "absolute";
         // preview.style.position = "";
     preview.style.visibility = "";
-  },
-
-  //
-  //  This gets called when a key is pressed in the textarea.
-  //  We check if there is already a pending update and clear it if so.
-  //  Then set up an update to occur after a small delay (so if more keys
-  //    are pressed, the update won't occur until after there has been
-  //    a pause in the typing).
-  //  The callback function is set up below, after the Preview object is set up.
-  //
-    Update: function (html) {
-        console.log("updating with", html);
-      this.math_html = html;
-      if (this.timeout) {clearTimeout(this.timeout)}
-      this.timeout = setTimeout(this.callback,this.delay);
   },
 
   //
@@ -136,7 +120,6 @@ var Preview = {
   //    typesetting.  After it is done, call PreviewDone.
   //
   CreatePreview: function () {
-        console.log("actually in CreatePreview");
     Preview.timeout = null;
     if (this.mjPending) return;
     var text = this.math_html;
@@ -159,7 +142,6 @@ var Preview = {
   //  and swap the buffers to show the results.
   //
     PreviewDone: function () {
-        console.log("the preview is done.");
     this.mjRunning = this.mjPending = false;
     this.SwapBuffers();
   }
@@ -172,19 +154,20 @@ var Preview = {
 Preview.Init();
 Preview.callback = MathJax.Callback(["CreatePreview",Preview]);
 Preview.callback.autoReset = true;  // make sure it can run more than once
-    function update_preview(latex) {
+var my_timeout = null;
+    function update_preview() {
         var request = new XMLHttpRequest();
         request.open('POST', '/render');
         request.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
         request.onload = function() {
-            console.log('request', request);
+            Preview.math_html = request.responseText;
             if (request.status >= 200 && request.status < 400) {
                 // Success!
-                Preview.Update(request.responseText);
+                Preview.CreatePreview();
                 // document.getElementById('preview').innerHTML = request.responseText;
             } else {
                 // We reached our target server, but it returned an error
-                Preview.Update(request.responseText);
+                Preview.CreatePreview();
                 // document.getElementById('preview').innerHTML = request.responseText;
             }
             MathJax.Hub.Queue(["Typeset",MathJax.Hub]);
@@ -192,9 +175,8 @@ Preview.callback.autoReset = true;  // make sure it can run more than once
         request.onerror = function() {
             // There was a connection error of some sort
         };
-        request.send(latex);
+        request.send(editor.getValue());
     }
-
     var preview = document.getElementById('preview');
     var editor = ace.edit("editor");
     editor.session.setMode("ace/mode/latex");
@@ -202,7 +184,10 @@ Preview.callback.autoReset = true;  // make sure it can run more than once
     update_preview(editor.getValue());
     editor.session.on('change', function(delta) {
         // preview.innerHTML = editor.getValue();
-        update_preview(editor.getValue());
+        if (my_timeout) {
+            clearTimeout(my_timeout);
+        }
+        my_timeout = setTimeout(update_preview, 150);
     });
   </script>
 </body>
