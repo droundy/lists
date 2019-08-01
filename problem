@@ -94,7 +94,7 @@ if args.format == 'tex':
                            '--template',sys.argv[0]+'.tex'], stdin=subprocess.PIPE) as proc:
         write_latex(proc.stdin)
 elif args.format == 'html':
-    with subprocess.Popen(['pandoc','--mathjax','-f','latex', '-t', args.format], stdin=subprocess.PIPE) as proc:
+    with subprocess.Popen(['pandoc','-f','latex', '-t', args.format], stdin=subprocess.PIPE) as proc:
         write_latex(proc.stdin)
 elif args.format != 'pdf':
     with subprocess.Popen(['pandoc','-f','latex', '-t', args.format], stdin=subprocess.PIPE) as proc:
