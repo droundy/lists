@@ -1,3 +1,5 @@
+extern crate latex_snippet;
+
 use warp::{Filter, path};
 use display_as::{with_template, display, HTML, URL, UTF8, DisplayAs};
 use serde::{Deserialize, Serialize};
@@ -36,30 +38,33 @@ fn main() {
             // slices of memory...
             use bytes::buf::Buf;
             let body: Vec<u8> = full_body.collect();
-            let mut child = std::process::Command::new("./problem")
-                .args(&["--format", "html", "--check"])
-                .stdin(std::process::Stdio::piped())
-                .stdout(std::process::Stdio::piped())
-                .stderr(std::process::Stdio::piped())
-                .spawn()
-                .expect("trouble running script.");
-            {
-                use std::io::Write;
-                let stdin = child.stdin.as_mut().expect("Failed to open stdin");
-                stdin.write_all(&body).expect("Failed to write to stdin");
-            }
-            let output = child.wait_with_output().expect("Failed to read stdout");
-            if output.stderr.len() > 0 {
-                let mut v = Vec::new();
-                v.extend_from_slice(b"\n<span class=\"error\">\n");
-                v.extend_from_slice(&output.stderr);
-                v.extend_from_slice(b"\n</span>\n");
-                v.extend_from_slice(&output.stdout);
-                v
-            } else {
-                println!("No errors:\n{}\n", String::from_utf8_lossy(&output.stdout));
-                output.stdout
-            }
+            let body = String::from_utf8_lossy(&body);
+            use latex_snippet::html_string;
+            html_string(&body)
+            // let mut child = std::process::Command::new("./problem")
+            //     .args(&["--format", "html", "--check"])
+            //     .stdin(std::process::Stdio::piped())
+            //     .stdout(std::process::Stdio::piped())
+            //     .stderr(std::process::Stdio::piped())
+            //     .spawn()
+            //     .expect("trouble running script.");
+            // {
+            //     use std::io::Write;
+            //     let stdin = child.stdin.as_mut().expect("Failed to open stdin");
+            //     stdin.write_all(&body).expect("Failed to write to stdin");
+            // }
+            // let output = child.wait_with_output().expect("Failed to read stdout");
+            // if output.stderr.len() > 0 {
+            //     let mut v = Vec::new();
+            //     v.extend_from_slice(b"\n<span class=\"error\">\n");
+            //     v.extend_from_slice(&output.stderr);
+            //     v.extend_from_slice(b"\n</span>\n");
+            //     v.extend_from_slice(&output.stdout);
+            //     v
+            // } else {
+            //     println!("No errors:\n{}\n", String::from_utf8_lossy(&output.stdout));
+            //     output.stdout
+            // }
         });
     let edit = path!("edit-thing")
         .and(warp::filters::body::form())
