@@ -20,5 +20,6 @@ clapme = "0.1.13"
 memorable-wordlist = "0.1.5"
 lets-encrypt-warp = { git = "https://github.com/droundy/lets-encrypt-warp" }
 latex_snippet = "0.1.9"
+tar = "0.4.26"
 
 percent-encoding = "1.0.1"

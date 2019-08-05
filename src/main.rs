@@ -80,6 +80,24 @@ fn main() {
             change.save();
             "okay"
         });
+    let backup = path!("backup" / String)
+        .map(|code: String| {
+            let mut output = Vec::new();
+            {
+                let mut ar = tar::Builder::new(&mut output);
+                // Use the directory at one location, but insert it into the archive
+                // with a different name.
+                ar.append_dir_all("data", format!("data/{}", code)).unwrap();
+                ar.finish().unwrap();
+            }
+            Ok(warp::http::Response::builder()
+               .status(200)
+               .header("content-length", output.len())
+               .header("content-type", "application/tar")
+               .header("content-disposition", r#"attachment; filename="data.tar""#)
+               .body(output)
+               .unwrap())
+        });
     let choose = path!("choose" / String / String / String)
         .map(|code: String, list: String, name: String| {
             let change = ChooseThing {
@@ -152,6 +170,7 @@ fn main() {
     if let Some(domain) = flags.domain {
         lets_encrypt_warp::lets_encrypt(style_css
                                         .or(render)
+                                        .or(backup)
                                         .or(edit)
                                         .or(new)
                                         .or(choose)
@@ -165,6 +184,7 @@ fn main() {
     } else {
         warp::serve(style_css
                     .or(render)
+                    .or(backup)
                     .or(edit)
                     .or(new)
                     .or(choose)
