@@ -39,8 +39,8 @@ fn main() {
             use bytes::buf::Buf;
             let body: Vec<u8> = full_body.collect();
             let body = String::from_utf8_lossy(&body);
-            use latex_snippet::html_string;
-            html_string(&body)
+            use latex_snippet::{html_string, check_latex, include_solutions};
+            html_string(&include_solutions(&check_latex(&body)))
             // let mut child = std::process::Command::new("./problem")
             //     .args(&["--format", "html", "--check"])
             //     .stdin(std::process::Stdio::piped())
