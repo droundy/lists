@@ -25,7 +25,7 @@
   <style type="text/css" media="screen">
     #editor {
         width: 49%;
-        height: 12em;
+        min-height: 12em;
     }
     .preview {
         background-color: #ffffff;
@@ -74,7 +74,7 @@
     </div>
     <div id="buffer", class="preview"></div>
     <div id="editor">\paragraph{Test}
-This is \emph{nice} \LaTeX.
+This is \emph{nice} stuff.
 \begin{align}
 f(x) &= x^2 + e^x \\
 g(x) &= \frac1{1+x^2}
@@ -181,8 +181,13 @@ var my_timeout = null;
         request.send(editor.getValue());
     }
     var preview = document.getElementById('preview');
-    var editor = ace.edit("editor");
-    editor.session.setMode("ace/mode/latex");
+    var editor = ace.edit("editor", {
+        mode: "ace/mode/latex",
+        // autoScrollEditorIntoView: true,
+        maxLines: 4000,
+        minLines: 15,
+    });
+    // editor.session.setMode("ace/mode/latex");
     editor.renderer.setShowGutter(false);
     update_preview(editor.getValue());
     editor.session.on('change', function(delta) {
