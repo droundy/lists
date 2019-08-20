@@ -8,11 +8,19 @@ use clapme::ClapMe;
 mod atomicfile;
 
 #[derive(Debug, ClapMe, Serialize)]
+struct TlsFlags {
+    /// Contact email for domain.
+    email: String,
+    /// Domain to serve on using https
+    domain: String,
+}
+
+#[derive(Debug, ClapMe, Serialize)]
 struct Flags {
     /// Port to serve on, if not port 80.
     port: Option<u16>,
-    /// Domain to serve on using https
-    domain: Option<String>,
+    /// Options for TLS configuration
+    _tls: Option<TlsFlags>,
 }
 
 fn percent_decode(x: &str) -> String {
@@ -167,7 +175,7 @@ fn main() {
             display(HTML, &x).http_response()
         });
 
-    if let Some(domain) = flags.domain {
+    if let Some(tls) = flags._tls {
         lets_encrypt_warp::lets_encrypt(style_css
                                         .or(render)
                                         .or(backup)
@@ -180,7 +188,9 @@ fn main() {
                                         .or(list)
                                         .or(list_of_lists)
                                         .or(index),
-                                        &domain);
+                                        &tls.email,
+                                        &tls.domain)
+            .expect("Error connecting with TLS");
     } else {
         warp::serve(style_css
                     .or(render)

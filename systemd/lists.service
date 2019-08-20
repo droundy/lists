@@ -8,7 +8,7 @@ Type=simple
 Restart=always
 RestartSec=10
 User=root
-ExecStart=/home/droundy/thing-lists --domain lists.for-our.info
+ExecStart=/home/droundy/thing-lists --domain lists.for-our.info --email daveroundy@gmail.com
 WorkingDirectory=/root/lists
 
 [Install]
