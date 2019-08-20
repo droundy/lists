@@ -146,7 +146,8 @@ var Preview = {
       this.buffer.innerHTML = this.oldtext = text;
       this.mjRunning = true;
       MathJax.Hub.Queue(
-	        ["Typeset",MathJax.Hub,this.buffer],
+          ["resetEquationNumbers",MathJax.InputJax.TeX],
+          ["Typeset",MathJax.Hub,this.buffer],
 	        ["PreviewDone",this]
       );
     }
