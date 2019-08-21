@@ -37,13 +37,18 @@
     .preview {
         background-color: #ffffff;
         margin-left: 50%;
-      width: 49%;
+        width: 49%;
         position: absolute;
+        color: #7FB3D5;
     }
     div.center {
         text-align: center;
         margin-left: auto;
         margin-right: auto;
+    }
+    .solution {
+        margin-left: 1em;
+        color: #000000;
     }
     .error {
         background-color: #ff6666;
@@ -90,7 +95,13 @@ This is \emph{nice} stuff.
 \begin{align}
 f(x) &= x^2 + e^x \\
 g(x) &= \frac1{1+x^2}
-\end{align}
+      \end{align}
+      \begin{solution}
+      This is the solution, see \eqref{this_eq}.
+      \begin{align}
+        x^2 \label{this_eq}
+      \end{align}
+      \end{solution}
     </div>
   </main>
   <script>
