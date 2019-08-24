@@ -156,12 +156,16 @@ var Preview = {
     } else {
       this.buffer.innerHTML = this.oldtext = text;
         this.mjRunning = true;
-        console.log('foo');
-      MathJax.Hub.Queue(
-          // ["resetEquationNumbers",MathJax.InputJax.TeX],
-          ["Typeset",MathJax.Hub,this.buffer],
-	  ["PreviewDone",this]
-      );
+        MathJax.Hub.Queue(
+            function () {
+                if (MathJax.InputJax.TeX.resetEquationNumbers) {
+                    MathJax.InputJax.TeX.resetEquationNumbers();
+                }
+            },
+            // ["resetEquationNumbers",MathJax.InputJax.TeX],
+            ["Typeset",MathJax.Hub,this.buffer],
+	          ["PreviewDone",this]
+        );
     }
   },
 
