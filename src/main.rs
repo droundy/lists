@@ -48,7 +48,14 @@ fn main() {
             let body: Vec<u8> = full_body.collect();
             let body = String::from_utf8_lossy(&body);
             use latex_snippet::{html_string, check_latex, physics_macros};
-            html_string(&check_latex(&physics_macros(&body)))
+            let html = html_string(&check_latex(&physics_macros(&body)));
+            Ok(warp::http::Response::builder()
+               .status(200)
+               .header("content-length", html.len())
+               .header("content-type", "text/css")
+               .header("Access-Control-Allow-Origin", "https://osu.wiki")
+               .body(html)
+               .unwrap())
             // let mut child = std::process::Command::new("./problem")
             //     .args(&["--format", "html", "--check"])
             //     .stdin(std::process::Stdio::piped())
