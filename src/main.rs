@@ -38,6 +38,24 @@ fn main() {
            .body(STYLE)
            .unwrap())
     });
+    let latex_snippet_js = path!("latex_snippet.js").map(|| {
+        const CONTENTS: &'static str = include_str!("../../latex_snippet/pkg/latex_snippet.js");
+        Ok(warp::http::Response::builder()
+           .status(200)
+           .header("content-length", CONTENTS.len())
+           .header("content-type", "application/javascript")
+           .body(CONTENTS)
+           .unwrap())
+    });
+    let latex_snippet_wasm = path!("latex_snippet_bg.wasm").map(|| {
+        const CONTENTS: &'static [u8] = include_bytes!("../../latex_snippet/pkg/latex_snippet_bg.wasm");
+        Ok(warp::http::Response::builder()
+           .status(200)
+           .header("content-length", CONTENTS.len())
+           .header("content-type", "application/wasm")
+           .body(CONTENTS)
+           .unwrap())
+    });
     let render = path!("render")
         .and(warp::body::content_length_limit(1024 * 32))
         .and(warp::body::concat())
@@ -184,6 +202,8 @@ fn main() {
 
     if let Some(tls) = flags._tls {
         lets_encrypt_warp::lets_encrypt(style_css
+                                        .or(latex_snippet_js)
+                                        .or(latex_snippet_wasm)
                                         .or(render)
                                         .or(backup)
                                         .or(edit)
@@ -200,6 +220,8 @@ fn main() {
             .expect("Error connecting with TLS");
     } else {
         warp::serve(style_css
+                    .or(latex_snippet_js)
+                    .or(latex_snippet_wasm)
                     .or(render)
                     .or(backup)
                     .or(edit)
