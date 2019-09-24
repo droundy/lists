@@ -113,8 +113,7 @@ g(x) &= \frac1{1+x^2}
 // will "boot" the module and make it ready to use. Currently browsers
 // don't support natively imported WebAssembly as an ES module, but
 // eventually the manual initialization won't be required!
-import init, { include_solutions, omit_solutions, html_string,
-               physics_macros } from '/latex_snippet.js';
+import init, { html_with_solution, html_omit_solution } from '/latex_snippet.js';
 
 async function run() {
     // First up we need to actually load the wasm file, so we use the
@@ -216,7 +215,7 @@ async function run() {
     Preview.callback.autoReset = true;  // make sure it can run more than once
     var my_timeout = null;
     function update_preview() {
-        Preview.math_html = html_string(include_solutions(physics_macros(editor.getValue())));
+        Preview.math_html = html_with_solution(editor.getValue());
         Preview.CreatePreview();
     }
     var preview = document.getElementById('preview');
