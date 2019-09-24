@@ -26,7 +26,7 @@
     });
   </script>
   <style type="text/css" media="screen">
-    #editor {
+    .latexeditor, .ace_editor {
         width: 49%;
         min-height: 12em;
     }
@@ -87,10 +87,7 @@
       <input type="text" name="name" id="the-name">
     </form>
     <iframe style="display:none" name="hidden-form"></iframe>
-    <div class="preview", id="preview">
-    </div>
-    <div id="buffer", class="preview"></div>
-    <div id="editor">\paragraph{Test}
+    <div id="editor" class="latexeditor">\paragraph{Test}
 This is \emph{nice} stuff.
 \begin{align}
 f(x) &= x^2 + e^x \\
@@ -103,6 +100,19 @@ g(x) &= \frac1{1+x^2}
       \end{align}
       \end{solution}
     </div>
+    <textarea class="latexeditor">\paragraph{Test}
+This is \emph{nice} stuff.
+\begin{align}
+f(x) &= x^2 + e^x \\
+g(x) &= \frac1{1+x^2}
+      \end{align}
+      \begin{solution}
+      This is the solution, see \eqref{nother_eq}.
+      \begin{align}
+        x^2 \label{nother_eq}
+      \end{align}
+      \end{solution}
+    </textarea>
   </main>
   <!-- Note the usage of `type=module` here as this is an ES6 module -->
   <script type="module">
@@ -131,109 +141,116 @@ async function run() {
     // modes
     await init();
 
-    // And afterwards we can use all the functionality defined in wasm.
-    var Preview = {
-        delay: 150,        // delay after keystroke before updating
+    var latexEditors = document.querySelectorAll(".latexeditor");
 
-        preview: null,     // filled in by Init below
-        buffer: null,      // filled in by Init below
+    latexEditors.forEach(function(editElement) {
+        // And afterwards we can use all the functionality defined in wasm.
+        var Preview = {
+            delay: 150,        // delay after keystroke before updating
 
-        timeout: null,     // store setTimout id
-        mjRunning: false,  // true when MathJax is processing
-        mjPending: false,  // true when a typeset has been queued
-        oldText: null,     // used to check if an update is needed
-        math_html: null,   // used to store the new html we want
+            preview: null,     // filled in by Init below
+            buffer: null,      // filled in by Init below
 
-        //
-        //  Get the preview and buffer DIV's
-        //
-        Init: function () {
-            this.preview = document.getElementById("preview");
-            this.buffer = document.getElementById("buffer");
-        },
+            timeout: null,     // store setTimout id
+            mjRunning: false,  // true when MathJax is processing
+            mjPending: false,  // true when a typeset has been queued
+            oldText: null,     // used to check if an update is needed
+            math_html: null,   // used to store the new html we want
 
-        //
-        //  Switch the buffer and preview, and display the right one.
-        //  (We use visibility:hidden rather than display:none since
-        //  the results of running MathJax are more accurate that way.)
-        //
-        SwapBuffers: function () {
-            var buffer = this.preview, preview = this.buffer;
-            this.buffer = buffer; this.preview = preview;
-            buffer.style.visibility = "hidden"; // buffer.style.position = "absolute";
-            // preview.style.position = "";
-            preview.style.visibility = "";
-        },
+            //
+            //  Get the preview and buffer DIV's
+            //
+            Init: function () {
+                this.preview = document.createElement( 'div' );
+                this.buffer = document.createElement( 'div' );
+                this.buffer.classList.add('preview');
+                this.preview.classList.add('preview');
+                this.preview.visibility = "hidden";
+                this.buffer.visibility = "hidden";
+                editElement.parentNode.insertBefore( this.preview, editElement );
+                editElement.parentNode.insertBefore( this.buffer, editElement );
+            },
 
-        //
-        //  Creates the preview and runs MathJax on it.
-        //  If MathJax is already trying to render the code, return
-        //  If the text hasn't changed, return
-        //  Otherwise, indicate that MathJax is running, and start the
-        //    typesetting.  After it is done, call PreviewDone.
-        //
-        CreatePreview: function () {
-            Preview.timeout = null;
-            if (this.mjPending) return;
-            var text = this.math_html;
-            if (text === this.oldtext) return;
-            if (this.mjRunning) {
-                this.mjPending = true;
-                MathJax.Hub.Queue(["CreatePreview",this]);
-            } else {
-                this.buffer.innerHTML = this.oldtext = text;
-                this.mjRunning = true;
-                MathJax.Hub.Queue(
-                    function () {
-                        if (MathJax.InputJax.TeX.resetEquationNumbers) {
-                            MathJax.InputJax.TeX.resetEquationNumbers();
-                        }
-                    },
-                    // ["resetEquationNumbers",MathJax.InputJax.TeX],
-                    ["Typeset",MathJax.Hub,this.buffer],
-	                  ["PreviewDone",this]
-                );
+            //
+            //  Switch the buffer and preview, and display the right one.
+            //  (We use visibility:hidden rather than display:none since
+            //  the results of running MathJax are more accurate that way.)
+            //
+            SwapBuffers: function () {
+                var buffer = this.preview, preview = this.buffer;
+                this.buffer = buffer; this.preview = preview;
+                buffer.style.visibility = "hidden"; // buffer.style.position = "absolute";
+                // preview.style.position = "";
+                preview.style.visibility = "";
+            },
+
+            //
+            //  Creates the preview and runs MathJax on it.
+            //  If MathJax is already trying to render the code, return
+            //  If the text hasn't changed, return
+            //  Otherwise, indicate that MathJax is running, and start the
+            //    typesetting.  After it is done, call PreviewDone.
+            //
+            CreatePreview: function () {
+                Preview.timeout = null;
+                if (this.mjPending) return;
+                var text = this.math_html;
+                if (text === this.oldtext) return;
+                if (this.mjRunning) {
+                    this.mjPending = true;
+                    MathJax.Hub.Queue(["CreatePreview",this]);
+                } else {
+                    this.buffer.innerHTML = this.oldtext = text;
+                    this.mjRunning = true;
+                    MathJax.Hub.Queue(
+                        function () {
+                            if (MathJax.InputJax.TeX.resetEquationNumbers) {
+                                MathJax.InputJax.TeX.resetEquationNumbers();
+                            }
+                        },
+                        // ["resetEquationNumbers",MathJax.InputJax.TeX],
+                        ["Typeset",MathJax.Hub,this.buffer],
+	                      ["PreviewDone",this]
+                    );
+                }
+            },
+
+            //
+            //  Indicate that MathJax is no longer running,
+            //  and swap the buffers to show the results.
+            //
+            PreviewDone: function () {
+                this.mjRunning = this.mjPending = false;
+                this.SwapBuffers();
             }
-        },
+        };
 
         //
-        //  Indicate that MathJax is no longer running,
-        //  and swap the buffers to show the results.
+        //  Cache a callback to the CreatePreview action
         //
-        PreviewDone: function () {
-            this.mjRunning = this.mjPending = false;
-            this.SwapBuffers();
+        Preview.Init();
+        Preview.callback = MathJax.Callback(["CreatePreview",Preview]);
+        Preview.callback.autoReset = true;  // make sure it can run more than once
+        var my_timeout = null;
+        function update_preview() {
+            Preview.math_html = html_with_solution(editor.getValue());
+            Preview.CreatePreview();
         }
-
-    };
-
-    //
-    //  Cache a callback to the CreatePreview action
-    //
-    Preview.Init();
-    Preview.callback = MathJax.Callback(["CreatePreview",Preview]);
-    Preview.callback.autoReset = true;  // make sure it can run more than once
-    var my_timeout = null;
-    function update_preview() {
-        Preview.math_html = html_with_solution(editor.getValue());
-        Preview.CreatePreview();
-    }
-    var preview = document.getElementById('preview');
-    var editor = ace.edit("editor", {
-        mode: "ace/mode/latex",
-        // autoScrollEditorIntoView: true,
-        maxLines: 4000,
-        minLines: 15,
-    });
-    // editor.session.setMode("ace/mode/latex");
-    editor.renderer.setShowGutter(false);
-    update_preview(editor.getValue());
-    editor.session.on('change', function(delta) {
-        // preview.innerHTML = editor.getValue();
-        if (my_timeout) {
-            clearTimeout(my_timeout);
-        }
-        my_timeout = setTimeout(update_preview, 150);
+        var editor = ace.edit(editElement, {
+            mode: "ace/mode/latex",
+            // autoScrollEditorIntoView: true,
+            maxLines: 4000,
+            minLines: 15,
+        });
+        // editor.session.setMode("ace/mode/latex");
+        editor.renderer.setShowGutter(false);
+        update_preview(editor.getValue());
+        editor.session.on('change', function(delta) {
+            if (my_timeout) {
+                clearTimeout(my_timeout);
+            }
+            my_timeout = setTimeout(update_preview, 150);
+        });
     });
 }
 
