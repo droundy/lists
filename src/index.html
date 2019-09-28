@@ -143,113 +143,84 @@ async function run() {
 
     var latexEditors = document.querySelectorAll(".latexeditor");
 
+    const delay = 150;
+
     latexEditors.forEach(function(editElement) {
-        // And afterwards we can use all the functionality defined in wasm.
-        var Preview = {
-            delay: 150,        // delay after keystroke before updating
+        //
+        //  Get the preview and buffer DIV's
+        //
+        var preview = document.createElement( 'div' );
+        preview.visibility = "hidden";
+        preview.classList.add('preview');
+        var buffer = document.createElement( 'div' );
+        buffer.visibility = "hidden";
+        buffer.classList.add('preview');
+        editElement.parentNode.insertBefore( preview, editElement );
+        editElement.parentNode.insertBefore( buffer, editElement );
 
-            preview: null,     // filled in by Init below
-            buffer: null,      // filled in by Init below
+        var timeout = null;
+        var mjRunning = false;
+        var oldtext = "oops";
 
-            timeout: null,     // store setTimout id
-            mjRunning: false,  // true when MathJax is processing
-            mjPending: false,  // true when a typeset has been queued
-            oldText: null,     // used to check if an update is needed
-            math_html: null,   // used to store the new html we want
-
-            //
-            //  Get the preview and buffer DIV's
-            //
-            Init: function () {
-                this.preview = document.createElement( 'div' );
-                this.buffer = document.createElement( 'div' );
-                this.buffer.classList.add('preview');
-                this.preview.classList.add('preview');
-                this.preview.visibility = "hidden";
-                this.buffer.visibility = "hidden";
-                editElement.parentNode.insertBefore( this.preview, editElement );
-                editElement.parentNode.insertBefore( this.buffer, editElement );
-            },
-
-            //
-            //  Switch the buffer and preview, and display the right one.
-            //  (We use visibility:hidden rather than display:none since
-            //  the results of running MathJax are more accurate that way.)
-            //
-            SwapBuffers: function () {
-                var buffer = this.preview, preview = this.buffer;
-                this.buffer = buffer; this.preview = preview;
-                buffer.style.visibility = "hidden"; // buffer.style.position = "absolute";
-                // preview.style.position = "";
-                preview.style.visibility = "";
-            },
-
-            //
-            //  Creates the preview and runs MathJax on it.
-            //  If MathJax is already trying to render the code, return
-            //  If the text hasn't changed, return
-            //  Otherwise, indicate that MathJax is running, and start the
-            //    typesetting.  After it is done, call PreviewDone.
-            //
-            CreatePreview: function () {
-                Preview.timeout = null;
-                if (this.mjPending) return;
-                var text = this.math_html;
-                if (text === this.oldtext) return;
-                if (this.mjRunning) {
-                    this.mjPending = true;
-                    MathJax.Hub.Queue(["CreatePreview",this]);
-                } else {
-                    this.buffer.innerHTML = this.oldtext = text;
-                    this.mjRunning = true;
-                    MathJax.Hub.Queue(
-                        function () {
-                            if (MathJax.InputJax.TeX.resetEquationNumbers) {
-                                MathJax.InputJax.TeX.resetEquationNumbers();
-                            }
-                        },
-                        // ["resetEquationNumbers",MathJax.InputJax.TeX],
-                        ["Typeset",MathJax.Hub,this.buffer],
-	                      ["PreviewDone",this]
-                    );
-                }
-            },
-
-            //
-            //  Indicate that MathJax is no longer running,
-            //  and swap the buffers to show the results.
-            //
-            PreviewDone: function () {
-                this.mjRunning = this.mjPending = false;
-                this.SwapBuffers();
+        //
+        //  Creates the preview and runs MathJax on it.
+        //  If MathJax is already trying to render the code, return
+        //  If the text hasn't changed, return
+        //  Otherwise, indicate that MathJax is running, and start the
+        //    typesetting.  After it is done, call PreviewDone.
+        //
+        var update_preview = function () {
+            if (mjRunning) {
+                timeout = setTimeout(update_preview, delay);
+                return;
             }
+            timeout = null;
+            var text = editor.getValue();
+            if (text === oldtext) return;
+            oldtext = text;
+            buffer.innerHTML = html_with_solution(text);
+            mjRunning = true;
+            MathJax.Hub.Queue(
+                function () {
+                    if (MathJax.InputJax.TeX.resetEquationNumbers) {
+                        MathJax.InputJax.TeX.resetEquationNumbers();
+                    }
+                },
+                // ["resetEquationNumbers",MathJax.InputJax.TeX],
+                ["Typeset",MathJax.Hub,buffer],
+                function () {
+                    //  Indicate that MathJax is no longer running,
+                    //  and swap the buffers to show the results.
+                    mjRunning = false;
+                    //  Switch the buffer and preview, and display
+                    //  the right one.  (We use visibility:hidden
+                    //  rather than display:none since the results
+                    //  of running MathJax are more accurate that
+                    //  way.)
+                    var b = preview, p = buffer;
+                    buffer = b; preview = p;
+                    buffer.style.visibility = "hidden";
+                    preview.style.visibility = "";
+                }
+            );
         };
 
-        //
-        //  Cache a callback to the CreatePreview action
-        //
-        Preview.Init();
-        Preview.callback = MathJax.Callback(["CreatePreview",Preview]);
-        Preview.callback.autoReset = true;  // make sure it can run more than once
-        var my_timeout = null;
-        function update_preview() {
-            Preview.math_html = html_with_solution(editor.getValue());
-            Preview.CreatePreview();
-        }
         var editor = ace.edit(editElement, {
             mode: "ace/mode/latex",
-            // autoScrollEditorIntoView: true,
+            wrap: true,   // wrap text to view
+            showGutter: false,
             maxLines: 4000,
             minLines: 15,
         });
-        // editor.session.setMode("ace/mode/latex");
-        editor.renderer.setShowGutter(false);
-        update_preview(editor.getValue());
+        //  Cache a callback to the update_preview action
+        var callback = MathJax.Callback(update_preview);
+        callback.autoReset = true;  // make sure it can run more than once
+        update_preview();
         editor.session.on('change', function(delta) {
-            if (my_timeout) {
-                clearTimeout(my_timeout);
+            if (timeout) {
+                clearTimeout(timeout);
             }
-            my_timeout = setTimeout(update_preview, 150);
+            timeout = setTimeout(update_preview, delay);
         });
     });
 }

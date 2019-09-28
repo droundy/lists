@@ -12,7 +12,7 @@ serde = { version = "1.0", features = ["derive"] }
 serde_yaml = "0.7"
 tempfile = "3.0.3"
 warp = "0.1.9"
-display-as = { version = "0.4.3", features = ["warp"] }
+display-as = { version = "0.4.7", features = ["warp"] }
 simple-error = "0.1.9"
 rand = "0.7.0"
 bytes = "0.4.11"
