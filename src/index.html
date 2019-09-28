@@ -27,19 +27,27 @@
   </script>
   <style type="text/css" media="screen">
     .latexeditor, .ace_editor {
-        width: 49%;
-        min-height: 12em;
+        clear: both;
     }
     aside {
         float: right;
         width: 50%;
     }
+    .latexparent {
+        position: relative;
+    }
     .preview {
         background-color: #ffffff;
-        margin-left: 50%;
-        width: 49%;
-        position: absolute;
         color: #7FB3D5;
+    }
+    .latexeditor, .ace_editor, .preview {
+        width: 100%;
+        float: left;
+    }
+    @media (min-width: 50em) {
+       .latexeditor, .ace_editor, .preview {
+          width: 49%;
+       }
     }
     div.center {
         text-align: center;
@@ -146,17 +154,16 @@ async function run() {
     const delay = 150;
 
     latexEditors.forEach(function(editElement) {
-        //
-        //  Get the preview and buffer DIV's
-        //
+        // The preview and buffer will hold the rendered latex, and
+        // will swap roles as we double buffer.
         var preview = document.createElement( 'div' );
         preview.visibility = "hidden";
         preview.classList.add('preview');
         var buffer = document.createElement( 'div' );
         buffer.visibility = "hidden";
         buffer.classList.add('preview');
-        editElement.parentNode.insertBefore( preview, editElement );
-        editElement.parentNode.insertBefore( buffer, editElement );
+        editElement.parentNode.insertBefore(preview, editElement.nextSibling);
+        editElement.parentNode.insertBefore(buffer, preview);
 
         var timeout = null;
         var mjRunning = false;
@@ -199,8 +206,10 @@ async function run() {
                     //  way.)
                     var b = preview, p = buffer;
                     buffer = b; preview = p;
-                    buffer.style.visibility = "hidden";
-                    preview.style.visibility = "";
+                    // buffer.style.visibility = "hidden";
+                    // preview.style.visibility = "";
+                    buffer.style.display = "none";
+                    preview.style.display = "block";
                 }
             );
         };
