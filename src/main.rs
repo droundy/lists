@@ -1,6 +1,5 @@
-extern crate latex_snippet;
-
 use warp::{Filter, path};
+use warp::reply::Reply;
 use display_as::{with_template, display, HTML, URL, UTF8, DisplayAs};
 use serde::{Deserialize, Serialize};
 use clapme::ClapMe;
@@ -27,7 +26,8 @@ fn percent_decode(x: &str) -> String {
     percent_encoding::percent_decode(x.as_bytes()).decode_utf8().unwrap().to_string()
 }
 
-fn main() {
+#[tokio::main]
+async fn main() {
     let flags = Flags::from_args();
     let style_css = path!("style.css").map(|| {
         const STYLE: &'static str = include_str!("../style.css");
@@ -56,49 +56,6 @@ fn main() {
            .body(CONTENTS)
            .unwrap())
     });
-    let render = path!("render")
-        .and(warp::body::content_length_limit(1024 * 32))
-        .and(warp::body::concat())
-        .map(|full_body: warp::body::FullBody| {
-            // FullBody is a `Buf`, which could have several non-contiguous
-            // slices of memory...
-            use bytes::buf::Buf;
-            let body: Vec<u8> = full_body.collect();
-            let body = String::from_utf8_lossy(&body);
-            use latex_snippet::{html_string, check_latex, physics_macros};
-            let html = html_string(&check_latex(&physics_macros(&body)));
-            Ok(warp::http::Response::builder()
-               .status(200)
-               .header("content-length", html.len())
-               .header("content-type", "text/css")
-               .header("Access-Control-Allow-Origin", "https://osu.wiki")
-               .body(html)
-               .unwrap())
-            // let mut child = std::process::Command::new("./problem")
-            //     .args(&["--format", "html", "--check"])
-            //     .stdin(std::process::Stdio::piped())
-            //     .stdout(std::process::Stdio::piped())
-            //     .stderr(std::process::Stdio::piped())
-            //     .spawn()
-            //     .expect("trouble running script.");
-            // {
-            //     use std::io::Write;
-            //     let stdin = child.stdin.as_mut().expect("Failed to open stdin");
-            //     stdin.write_all(&body).expect("Failed to write to stdin");
-            // }
-            // let output = child.wait_with_output().expect("Failed to read stdout");
-            // if output.stderr.len() > 0 {
-            //     let mut v = Vec::new();
-            //     v.extend_from_slice(b"\n<span class=\"error\">\n");
-            //     v.extend_from_slice(&output.stderr);
-            //     v.extend_from_slice(b"\n</span>\n");
-            //     v.extend_from_slice(&output.stdout);
-            //     v
-            // } else {
-            //     println!("No errors:\n{}\n", String::from_utf8_lossy(&output.stdout));
-            //     output.stdout
-            // }
-        });
     let edit = path!("edit-thing")
         .and(warp::filters::body::form())
         .map(|change: EditThing| {
@@ -139,7 +96,7 @@ fn main() {
                 list: percent_decode(&list),
             };
             println!("choosing thing {:?}", change);
-            display(HTML, &change.choose()).http_response()
+            display(HTML, &change.choose()).into_response()
         });
     let delay = path!("pass" / String / String / String)
         .map(|code: String, list: String, name: String| {
@@ -149,12 +106,12 @@ fn main() {
                 list: percent_decode(&list),
             };
             println!("delay thing {:?}", change);
-            display(HTML, &change.delay()).http_response()
+            display(HTML, &change.delay()).into_response()
         });
     let index = (warp::path::end().or(path!("index.html")))
         .map(|_| {
             println!("I am doing index.");
-            display(HTML, &Index {}).http_response()
+            display(HTML, &Index {}).into_response()
         });
     let search = path!("search" / String / String / String)
         .map(|code: String, listname: String, pattern: String| {
@@ -169,7 +126,7 @@ fn main() {
                 "".into()
             };
             let x = ThingsOnly(ThingList::read(&code, &listname).filter(&pattern));
-            display(HTML, &x).http_response()
+            display(HTML, &x).into_response()
         });
     let sort = path!("sort" / String / String)
         .map(|code: String, listname: String| {
@@ -180,7 +137,7 @@ fn main() {
                 .decode_utf8().unwrap();
             let x = ThingsOnly(ThingList::read(&code, &listname).sorted());
             println!("I am done sorting the list.");
-            display(HTML, &x).http_response()
+            display(HTML, &x).into_response()
         });
     let list = path!(String / String)
         .map(|code: String, listname: String| {
@@ -189,7 +146,7 @@ fn main() {
             let code = percent_encoding::percent_decode(code.as_bytes())
                 .decode_utf8().unwrap();
             let x = ThingList::read(&code, &listname);
-            display(HTML, &x).http_response()
+            display(HTML, &x).into_response()
         });
     let list_of_lists = path!(String)
         .map(|code: String| {
@@ -197,14 +154,13 @@ fn main() {
             let code = percent_encoding::percent_decode(code.as_bytes())
                 .decode_utf8().unwrap();
             let x = ThingList::read(&code, "fixme");
-            display(HTML, &x).http_response()
+            display(HTML, &x).into_response()
         });
 
     if let Some(tls) = flags._tls {
         lets_encrypt_warp::lets_encrypt(style_css
                                         .or(latex_snippet_js)
                                         .or(latex_snippet_wasm)
-                                        .or(render)
                                         .or(backup)
                                         .or(edit)
                                         .or(new)
@@ -222,7 +178,6 @@ fn main() {
         warp::serve(style_css
                     .or(latex_snippet_js)
                     .or(latex_snippet_wasm)
-                    .or(render)
                     .or(backup)
                     .or(edit)
                     .or(new)
@@ -233,7 +188,7 @@ fn main() {
                     .or(list)
                     .or(list_of_lists)
                     .or(index))
-            .run(([0, 0, 0, 0], flags.port.unwrap_or(80)));
+            .run(([0, 0, 0, 0], flags.port.unwrap_or(80))).await;
     }
 }
 

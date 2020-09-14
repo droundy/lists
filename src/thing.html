@@ -4,6 +4,7 @@
 <a onclick="toggleView('[% self.slug() %]');toggleView('[% self.slug() %]-view')"><i class="material-icons">edit</i></a>
 [% if let Some(ref link) = self.link {
   %]<a class="choose" id="[% self.slug() %]-view"
+       target="_blank"
        onclick="replace_things('/choose/[% self.parent_code as URL %]/[%
                                         self.parent_name as URL %]/[%
                                         self.name as URL %]');" href="[% link as UTF8 %]">[% self.name %]</a>[%
