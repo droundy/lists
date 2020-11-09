@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title> self.name </title>
+  <link rel="stylesheet" href="/style.css">
+  <script type="text/javascript">[% memorable_wordlist::JAVASCRIPT as UTF8 %]</script>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+</head>
+<body>
+  <main>
+    <header>
+      <h1> Character sheets </h1>
+    </header>
+    <p>
+      These are character sheets.
+    </p>
+    <p>
+      If you want help with using these sheets (or if you use this and
+      like it), please feel free to
+      <a href="mailto:daveroundy@gmail.com">email me.</a>
+    </p>
+    <form id="pass-form"
+          target="hidden-form"
+          onsubmit="var name_element = document.getElementById('the-name');
+; window.location.href = passphrase_camel_case(44)+'/'+name_element.value; return false;">
+      <label>Create a new character</label>
+      <input type="text" name="name" id="the-name">
+    </form>
+    <iframe style="display:none" name="hidden-form"></iframe>
+</body>
+</html>
+
+
