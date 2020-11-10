@@ -13,6 +13,8 @@ serde_yaml = "0.8"
 tempfile = "3.0.3"
 warp = "0.2.5"
 tokio = { version = "0.2", features = ["full"] }
+futures = "0.3.8"
+
 display-as = { version = "0.5.0", features = ["usewarp"] }
 simple-error = "0.2.2"
 rand = "0.7.0"

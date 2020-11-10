@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>[% self.name %]</title>
+    <!-- <link rel="stylesheet" href="/style.css"> -->
+    <script type="text/javascript">[% memorable_wordlist:: JAVASCRIPT as UTF8 %]</script>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+</head>
+
+<script type="text/javascript">
+    const ws = new WebSocket('ws://' + location.host + '/sheets/ws/[% self.code %]');
+    console.log('did websocket');
+    ws.onopen = function () {
+        console.log('connected');
+        ws.send('greetings from earth')
+
+        var elems = document.querySelectorAll('[contenteditable]'), i;
+        console.log('got elems', elems);
+        for (i = 0; i < elems.length; ++i) {
+            let elem = elems[i];
+            console.log('added listener to', elem);
+            elem.addEventListener('input', function () {
+                ws.send(JSON.stringify({
+                    'type': 'change',
+                    'id': elem.id,
+                    'html': elem.innerHTML,
+                }));
+            });
+        }
+    };
+    ws.onmessage = function (event) {
+        let msg = JSON.parse(event.data);
+        console.log(msg);
+        // message(msg.data);
+        let elem = document.getElementById(msg.id);
+        if (elem.innerHTML != msg.html) {
+            elem.innerHTML = msg.html;
+        }
+    };
+    ws.onclose = function () {
+        console.log('disconnected');
+    };
+</script>
+
+<body>
+    <main>
+        <header>
+            <h1>[% self.name %]</h1>
+        </header>
+        <details id='new' contenteditable="true">
+            <summary>Edit this to create a new section</summary>
+            Extra information here.
+        </details>
+    </main>
+</body>
+
+</html>
