@@ -8,7 +8,24 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
 </head>
 
+<style>
+    details {
+        transition: background-color 0.5s ease-in-out;
+        border-radius: 1em;
+    }
+</style>
+
 <script type="text/javascript">
+    function randomColor(brightness) {
+        function randomChannel(brightness) {
+            var r = 255 - brightness;
+            var n = 0 | ((Math.random() * r) + brightness);
+            var s = n.toString(16);
+            return (s.length == 1) ? '0' + s : s;
+        }
+        return '#' + randomChannel(brightness) + randomChannel(brightness) + randomChannel(brightness);
+    }
+    let mycolor = randomColor(150);
     const ws = new WebSocket('ws://' + location.host + '/sheets/ws/[% self.code %]');
     console.log('did websocket');
     ws.onopen = function () {
@@ -25,6 +42,7 @@
                     'type': 'change',
                     'id': elem.id,
                     'html': elem.innerHTML,
+                    'color': mycolor,
                 }));
             });
         }
@@ -35,7 +53,12 @@
         // message(msg.data);
         let elem = document.getElementById(msg.id);
         if (elem.innerHTML != msg.html) {
+            elem.getWhite = setTimeout(function () {
+                elem.style.backgroundColor = 'white';
+            }, 1000);
             elem.innerHTML = msg.html;
+            console.log('color', event.color);
+            elem.style.backgroundColor = msg.color;
         }
     };
     ws.onclose = function () {

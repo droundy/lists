@@ -196,6 +196,7 @@ async fn editor_connected(code: String, ws: warp::ws::WebSocket, editors: Editor
 }
 
 async fn process_message(code: &str, msg: warp::ws::Message, editors: &Editors) {
+    let mut to_remove = Vec::new();
     for tx in editors.read().await.get(code).iter().flat_map(|x| x.iter()) {
         println!("Sending {:?} to {:?}", msg, tx);
         if let Err(_disconnected) = tx.send(Ok(msg.clone())) {
@@ -203,6 +204,7 @@ async fn process_message(code: &str, msg: warp::ws::Message, editors: &Editors) 
             // should be happening in another task, nothing more to
             // do here.
             println!("Websocket disconnected?");
+            to_remove.push(tx.clone());
         }
     }
 }
