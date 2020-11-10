@@ -161,11 +161,15 @@ async fn editor_connected(code: String, ws: warp::ws::WebSocket, editors: Editor
         }
     }));
 
-    // Save the sender in our list of connected users.
-    if let Some(old) = editors.write().await.insert(code.clone(), Vec::new()) {
-        editors.write().await.insert(code.clone(), old);
+    {
+        // Save the sender in our list of connected users.
+        let mut e = editors.write().await;
+        if e.get(&code).is_none() {
+            e.insert(code.clone(), Vec::new());
+        }
+        e.get_mut(&code).unwrap().push(tx);
+        e.get(&code).unwrap().len();
     }
-    editors.write().await.get_mut(&code).unwrap().push(tx);
 
     // Return a `Future` that is basically a state machine managing
     // this specific user's connection.
