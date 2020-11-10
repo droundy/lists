@@ -1,5 +1,5 @@
 use crate::atomicfile;
-use display_as::{display, with_template, DisplayAs, HTML, URL, UTF8};
+use display_as::{display, with_template, DisplayAs, HTML, UTF8};
 use futures::{FutureExt, StreamExt};
 use serde::{Deserialize, Serialize};
 use tokio::sync::{mpsc, RwLock};
@@ -209,7 +209,7 @@ async fn process_message(code: &str, msg: warp::ws::Message, editors: &Editors) 
     }
 }
 
-async fn ws_disconnected(editors: &Editors) {}
+async fn ws_disconnected(_editors: &Editors) {}
 
 struct Index;
 #[with_template("[%" "%]" "index.html")]

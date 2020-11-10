@@ -25,12 +25,18 @@
         }
         return '#' + randomChannel(brightness) + randomChannel(brightness) + randomChannel(brightness);
     }
+    function goWhite() {
+        var elems = document.querySelectorAll('[contenteditable]'), i;
+        for (i = 0; i < elems.length; ++i) {
+            let elem = elems[i];
+            elem.style.backgroundColor = 'white';
+        }
+    }
     let mycolor = randomColor(150);
     const ws = new WebSocket('ws://' + location.host + '/sheets/ws/[% self.code %]');
     console.log('did websocket');
     ws.onopen = function () {
         console.log('connected');
-        ws.send('greetings from earth')
 
         var elems = document.querySelectorAll('[contenteditable]'), i;
         console.log('got elems', elems);
@@ -47,17 +53,16 @@
             });
         }
     };
+    var timer = setTimeout(goWhite, 1000);
     ws.onmessage = function (event) {
         let msg = JSON.parse(event.data);
         console.log(msg);
         // message(msg.data);
         let elem = document.getElementById(msg.id);
         if (elem.innerHTML != msg.html) {
-            elem.getWhite = setTimeout(function () {
-                elem.style.backgroundColor = 'white';
-            }, 1000);
+            clearTimeout(timer);
+            timer = setTimeout(goWhite, 1000);
             elem.innerHTML = msg.html;
-            console.log('color', event.color);
             elem.style.backgroundColor = msg.color;
         }
     };
