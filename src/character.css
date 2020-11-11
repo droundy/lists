@@ -1,0 +1,9 @@
+[contenteditable] {
+    transition: background-color 0.5s ease-in-out;
+    border-radius: 0.25em;
+}
+
+body {
+    color: white;
+    background-color: black;
+}

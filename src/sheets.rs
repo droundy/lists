@@ -29,17 +29,17 @@ struct Section {
 impl DisplayAs<HTML> for Section {}
 
 impl Section {
-    fn change(&mut self, change: &Change) -> bool {
+    fn change(&mut self, change: &Change) -> Option<Change> {
         if change.kind == "change" {
             if change.id == self.title_id {
                 self.title = change.html.clone();
-                return true;
+                return Some(change.clone());
             } else if change.id == self.content_id {
                 self.content = change.html.clone();
-                return true;
+                return Some(change.clone());
             }
         }
-        false
+        None
     }
 }
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
@@ -83,24 +83,30 @@ impl Character {
             .expect("error creating save file");
         serde_yaml::to_writer(&f, self).expect("error writing yaml")
     }
-    fn change(&mut self, change: &Change) -> bool {
+    fn change(&mut self, change: &Change) -> Option<Change> {
         for c in self.sections.iter_mut() {
-            if c.change(&change) {
-                return true;
+            if let Some(cnew) = c.change(&change) {
+                return Some(cnew);
             }
         }
         if change.kind == "change" {
-            self.sections.push(Section {
+            let s = Section {
                 title: change.html.clone(),
                 title_id: change.id.clone(),
                 content: "Edit me".to_string(),
                 content_id: memorable_wordlist::camel_case(44),
                 table: Vec::new(),
-            });
+            };
+            self.sections.push(s.clone());
             println!("I just pushed a new section {:?}", change.html);
-            return true;
+            return Some(Change {
+                kind: "new-section".to_string(),
+                id: "sections".to_string(),
+                html: display_as::format_as!(HTML, s),
+                color: change.color.clone(),
+            });
         }
-        false
+        None
     }
 }
 
@@ -118,6 +124,17 @@ pub fn sheets() -> impl Filter<Extract = impl warp::Reply, Error = warp::Rejecti
     // Turns our "state" into a new filter.
     let editors = warp::any().map(move || editors.clone());
 
+    let css = path!("sheets" / "character.css")
+        .or(path!("sheets" / String / "character.css"))
+        .map(|_| {
+            const STYLE: &'static str = include_str!("character.css");
+            Ok(warp::http::Response::builder()
+                .status(200)
+                .header("content-length", STYLE.len())
+                .header("content-type", "text/css")
+                .body(STYLE)
+                .unwrap())
+        });
     let index = path!("sheets").map(|| {
         println!("I am doing index.");
         display(HTML, &Index).into_response()
@@ -156,7 +173,7 @@ pub fn sheets() -> impl Filter<Extract = impl warp::Reply, Error = warp::Rejecti
                 ws.on_upgrade(move |socket| editor_connected(code, character, socket, editors))
             },
         );
-    sock.or(character).or(index)
+    sock.or(css).or(character).or(index)
 }
 
 async fn editor_connected(
@@ -221,15 +238,17 @@ struct Change {
     color: String,
 }
 
-async fn process_message(code: &str, character: &str, msg: warp::ws::Message, editors: &Editors) {
+async fn process_message(code: &str, character: &str, mut msg: warp::ws::Message, editors: &Editors) {
     let place = format!("{}/{}", code, character);
     let mut character = Character::read(code, character);
     let change: Change = serde_json::from_str(msg.to_str().expect("utf8")).expect("parsing sonj");
-    character.change(&change);
+    if let Some(newc) = character.change(&change) {
+        msg = warp::ws::Message::text(serde_json::to_string(&newc).unwrap());
+    }
     println!("character is {:?}", character);
     character.save();
     for tx in editors.read().await.get(&place).unwrap().iter() {
-        println!("Sending {:?} to {:?}", msg, tx);
+        println!("Sending {} to {:?}", msg.to_str().unwrap(), tx);
         if let Err(_disconnected) = tx.send(Ok(msg.clone())) {
             // The tx is disconnected, our `user_disconnected` code
             // should be happening in another task, nothing more to

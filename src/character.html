@@ -3,7 +3,7 @@
 
 <head>
     <title>[% self.name %]</title>
-    <!-- <link rel="stylesheet" href="/style.css"> -->
+    <!-- <link rel="stylesheet" href="character.css"> -->
     <script type="text/javascript">[% memorable_wordlist:: JAVASCRIPT as UTF8 %]</script>
     <meta name="viewport" content="width=device-width, initial-scale=1">
 </head>
@@ -12,6 +12,15 @@
     [contenteditable] {
         transition: background-color 0.5s ease-in-out;
         border-radius: 0.25em;
+    }
+
+    details:nth-last-child(2) {
+        color: #dddda0;
+    }
+
+    body {
+        color: #ffffe0;
+        background-color: black;
     }
 </style>
 
@@ -29,10 +38,10 @@
         var elems = document.querySelectorAll('[contenteditable]'), i;
         for (i = 0; i < elems.length; ++i) {
             let elem = elems[i];
-            elem.style.backgroundColor = 'white';
+            elem.style.backgroundColor = 'black';
         }
     }
-    let mycolor = randomColor(150);
+    let mycolor = randomColor(10);
     const ws = new WebSocket('ws://' + location.host + '/sheets/ws/[% self.code %]/[% self.name %]');
     console.log('did websocket');
     ws.onopen = function () {
@@ -58,12 +67,21 @@
         let msg = JSON.parse(event.data);
         console.log(msg);
         // message(msg.data);
-        let elem = document.getElementById(msg.id);
-        if (elem && mycolor != msg.color && elem.innerHTML != msg.html) {
-            clearTimeout(timer);
-            timer = setTimeout(goWhite, 1000);
-            elem.innerHTML = msg.html;
-            elem.style.backgroundColor = msg.color;
+        if (msg.kind == 'change') {
+            let elem = document.getElementById(msg.id);
+            if (elem && mycolor != msg.color && elem.innerHTML != msg.html) {
+                clearTimeout(timer);
+                timer = setTimeout(goWhite, 1000);
+                elem.innerHTML = msg.html;
+                elem.style.backgroundColor = msg.color;
+            }
+        }
+        if (msg.kind == 'new-section' && mycolor != msg.color) {
+            let main = document.getElementById('main');
+            let div = document.createElement('div');
+            div.innerHTML = msg.html;
+            console.log('lastchild:', main.lastChild);
+            main.insertBefore(div.firstChild, main.lastChild.previousSibling);
         }
     };
     ws.onclose = function () {
@@ -72,14 +90,14 @@
 </script>
 
 <body>
-    <main>
+    <main id="main">
         <header>
             <h1>[% self.name %]</h1>
         </header>
         [%
-           for s in self.sections.iter() {
-                s
-           }
+        for s in self.sections.iter() {
+        s
+        }
         %]
     </main>
 </body>
