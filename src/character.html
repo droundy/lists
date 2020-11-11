@@ -59,7 +59,7 @@
         console.log(msg);
         // message(msg.data);
         let elem = document.getElementById(msg.id);
-        if (elem && elem.innerHTML != msg.html) {
+        if (elem && mycolor != msg.color && elem.innerHTML != msg.html) {
             clearTimeout(timer);
             timer = setTimeout(goWhite, 1000);
             elem.innerHTML = msg.html;
