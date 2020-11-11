@@ -9,9 +9,9 @@
 </head>
 
 <style>
-    details {
+    [contenteditable] {
         transition: background-color 0.5s ease-in-out;
-        border-radius: 1em;
+        border-radius: 0.25em;
     }
 </style>
 
@@ -33,7 +33,7 @@
         }
     }
     let mycolor = randomColor(150);
-    const ws = new WebSocket('ws://' + location.host + '/sheets/ws/[% self.code %]');
+    const ws = new WebSocket('ws://' + location.host + '/sheets/ws/[% self.code %]/[% self.name %]');
     console.log('did websocket');
     ws.onopen = function () {
         console.log('connected');
@@ -45,7 +45,7 @@
             console.log('added listener to', elem);
             elem.addEventListener('input', function () {
                 ws.send(JSON.stringify({
-                    'type': 'change',
+                    'kind': 'change',
                     'id': elem.id,
                     'html': elem.innerHTML,
                     'color': mycolor,
@@ -59,7 +59,7 @@
         console.log(msg);
         // message(msg.data);
         let elem = document.getElementById(msg.id);
-        if (elem.innerHTML != msg.html) {
+        if (elem && elem.innerHTML != msg.html) {
             clearTimeout(timer);
             timer = setTimeout(goWhite, 1000);
             elem.innerHTML = msg.html;
@@ -76,10 +76,11 @@
         <header>
             <h1>[% self.name %]</h1>
         </header>
-        <details id='new' contenteditable="true">
-            <summary>Edit this to create a new section</summary>
-            Extra information here.
-        </details>
+        [%
+           for s in self.sections.iter() {
+                s
+           }
+        %]
     </main>
 </body>
 

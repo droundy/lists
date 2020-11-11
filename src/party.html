@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>[% self.code %]</title>
+    <link rel="stylesheet" href="/style.css">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+</head>
+
+<body>
+    <main>
+        <header>
+            <h1>[% self.code %]</h1>
+        </header>
+        [% for c in self.characters.iter() { %]
+             [% c.name %]
+        [% } %]
+    </main>
+</body>
+
+</html>

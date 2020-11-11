@@ -20,11 +20,28 @@ impl DisplayAs<HTML> for Character {}
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 struct Section {
     title: String,
-    id: String,
+    title_id: String,
     content: String,
+    content_id: String,
     table: Vec<Row>,
 }
+#[with_template("[%" "%]" "section.html")]
+impl DisplayAs<HTML> for Section {}
 
+impl Section {
+    fn change(&mut self, change: &Change) -> bool {
+        if change.kind == "change" {
+            if change.id == self.title_id {
+                self.title = change.html.clone();
+                return true;
+            } else if change.id == self.content_id {
+                self.content = change.html.clone();
+                return true;
+            }
+        }
+        false
+    }
+}
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 struct Row {
     id: String,
@@ -46,58 +63,44 @@ enum Action {
 }
 
 impl Character {
-    fn slug(&self) -> String {
-        self.name
-            .replace("'", "-")
-            .replace(" ", "-")
-            .replace("\"", "-")
-            .replace("\\", "-")
-    }
-}
-
-#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
-struct Party {
-    code: String,
-    characters: Vec<Character>,
-}
-#[with_template("[%" "%]" "party.html")]
-impl DisplayAs<HTML> for Party {}
-
-impl Party {
-    fn read(code: &str) -> Self {
-        if let Ok(f) = ::std::fs::File::open(format!("data/{}", code)) {
-            if let Ok(mut s) = serde_yaml::from_reader::<_, Vec<Character>>(&f) {
-                // Anything that has an empty name should just be deleted...
-                s.retain(|x| x.name.len() > 0);
-                return Party {
-                    code: code.to_string(),
-                    characters: s,
-                };
+    fn read(code: &str, name: &str) -> Self {
+        if let Ok(f) = ::std::fs::File::open(format!("data/{}/{}.yaml", code, name)) {
+            if let Ok(c) = serde_yaml::from_reader::<_, Character>(&f) {
+                return c;
             }
         }
-        Party {
+        Character {
             code: code.to_string(),
-            characters: Vec::new(),
-        }
-    }
-    fn save(&self) {
-        let f = atomicfile::AtomicFile::create(format!("data/{}", self.code))
-            .expect("error creating save file");
-        serde_yaml::to_writer(&f, &self.characters).expect("error writing yaml")
-    }
-    fn lookup(&self, name: &str) -> Character {
-        for c in self.characters.iter() {
-            if c.name == name {
-                return c.clone();
-            }
-        }
-        return Character {
-            code: self.code.clone(),
             name: name.to_string(),
             spell_points: None,
             psi: None,
             sections: Vec::new(),
-        };
+        }
+    }
+    fn save(&self) {
+        std::fs::create_dir_all(format!("data/{}", self.code)).unwrap();
+        let f = atomicfile::AtomicFile::create(format!("data/{}/{}.yaml", self.code, self.name))
+            .expect("error creating save file");
+        serde_yaml::to_writer(&f, self).expect("error writing yaml")
+    }
+    fn change(&mut self, change: &Change) -> bool {
+        for c in self.sections.iter_mut() {
+            if c.change(&change) {
+                return true;
+            }
+        }
+        if change.kind == "change" {
+            self.sections.push(Section {
+                title: change.html.clone(),
+                title_id: change.id.clone(),
+                content: "Edit me".to_string(),
+                content_id: memorable_wordlist::camel_case(44),
+                table: Vec::new(),
+            });
+            println!("I just pushed a new section {:?}", change.html);
+            return true;
+        }
+        false
     }
 }
 
@@ -127,27 +130,41 @@ pub fn sheets() -> impl Filter<Extract = impl warp::Reply, Error = warp::Rejecti
             let code = percent_encoding::percent_decode(code.as_bytes())
                 .decode_utf8()
                 .unwrap();
-            let party = Party::read(&code);
-            display(HTML, &party.lookup(&character_name)).into_response()
+            let mut c = Character::read(&code, &character_name);
+            c.sections.push(Section {
+                title: "Edit this to create a new section".to_string(),
+                title_id: memorable_wordlist::camel_case(44),
+                content: "".to_string(),
+                content_id: memorable_wordlist::camel_case(44),
+                table: Vec::new(),
+            });
+            display(HTML, &c).into_response()
         });
-    let party = path!("sheets" / String).map(|code: String| {
-        println!("Party: {}", code);
-        let code = percent_encoding::percent_decode(code.as_bytes())
-            .decode_utf8()
-            .unwrap();
-        let party = Party::read(&code);
-        display(HTML, &party).into_response()
-    });
-    let sock = path!("sheets" / "ws" / String)
+    // let party = path!("sheets" / String).map(|code: String| {
+    //     println!("Party: {}", code);
+    //     let code = percent_encoding::percent_decode(code.as_bytes())
+    //         .decode_utf8()
+    //         .unwrap();
+    //     let party = Party::read(&code);
+    //     display(HTML, &party).into_response()
+    // });
+    let sock = path!("sheets" / "ws" / String / String)
         .and(warp::ws())
         .and(editors)
-        .map(|code: String, ws: warp::ws::Ws, editors| {
-            ws.on_upgrade(move |socket| editor_connected(code, socket, editors))
-        });
-    sock.or(character).or(party).or(index)
+        .map(
+            |code: String, character: String, ws: warp::ws::Ws, editors| {
+                ws.on_upgrade(move |socket| editor_connected(code, character, socket, editors))
+            },
+        );
+    sock.or(character).or(index)
 }
 
-async fn editor_connected(code: String, ws: warp::ws::WebSocket, editors: Editors) {
+async fn editor_connected(
+    code: String,
+    character: String,
+    ws: warp::ws::WebSocket,
+    editors: Editors,
+) {
     println!("Someone connected.");
     // Split the socket into a sender and receive of messages.
     let (user_ws_tx, mut user_ws_rx) = ws.split();
@@ -161,14 +178,15 @@ async fn editor_connected(code: String, ws: warp::ws::WebSocket, editors: Editor
         }
     }));
 
+    let place = format!("{}/{}", code, character);
     {
         // Save the sender in our list of connected users.
         let mut e = editors.write().await;
-        if e.get(&code).is_none() {
-            e.insert(code.clone(), Vec::new());
+        if e.get(&place).is_none() {
+            e.insert(place.clone(), Vec::new());
         }
-        e.get_mut(&code).unwrap().push(tx);
-        e.get(&code).unwrap().len();
+        e.get_mut(&place).unwrap().push(tx);
+        println!("got {} connections now", e.get(&place).unwrap().len());
     }
 
     // Return a `Future` that is basically a state machine managing
@@ -187,7 +205,7 @@ async fn editor_connected(code: String, ws: warp::ws::WebSocket, editors: Editor
                 break;
             }
         };
-        process_message(&code, msg, &editors).await;
+        process_message(&code, &character, msg, &editors).await;
     }
 
     // user_ws_rx stream will keep processing as long as the user stays
@@ -195,8 +213,20 @@ async fn editor_connected(code: String, ws: warp::ws::WebSocket, editors: Editor
     ws_disconnected(&editors2).await;
 }
 
-async fn process_message(code: &str, msg: warp::ws::Message, editors: &Editors) {
-    let mut to_remove = Vec::new();
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+struct Change {
+    kind: String,
+    id: String,
+    html: String,
+    color: String,
+}
+
+async fn process_message(code: &str, character: &str, msg: warp::ws::Message, editors: &Editors) {
+    let mut character = Character::read(code, character);
+    let change: Change = serde_json::from_str(msg.to_str().expect("utf8")).expect("parsing sonj");
+    character.change(&change);
+    println!("character is {:?}", character);
+    character.save();
     for tx in editors.read().await.get(code).iter().flat_map(|x| x.iter()) {
         println!("Sending {:?} to {:?}", msg, tx);
         if let Err(_disconnected) = tx.send(Ok(msg.clone())) {
@@ -204,9 +234,9 @@ async fn process_message(code: &str, msg: warp::ws::Message, editors: &Editors) 
             // should be happening in another task, nothing more to
             // do here.
             println!("Websocket disconnected?");
-            to_remove.push(tx.clone());
         }
     }
+    // editors.write().await.get_mut(code).unwrap().retain(|x| !x.is_closed());
 }
 
 async fn ws_disconnected(_editors: &Editors) {}
