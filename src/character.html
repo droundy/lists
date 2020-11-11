@@ -14,10 +14,6 @@
         border-radius: 0.25em;
     }
 
-    details:nth-last-child(2) {
-        color: #dddda0;
-    }
-
     body {
         color: #ffffe0;
         background-color: black;
@@ -61,6 +57,15 @@
                 }));
             });
         }
+        let newsection = document.getElementById('new-section');
+        newsection.addEventListener('click', function () {
+            ws.send(JSON.stringify({
+                'kind': 'new-section',
+                'id': 'main',
+                'html': '',
+                'color': mycolor,
+            }));
+        });
     };
     var timer = setTimeout(goWhite, 1000);
     ws.onmessage = function (event) {
@@ -99,6 +104,7 @@
         s
         }
         %]
+        <button id="new-section">New section</button>
     </main>
 </body>
 

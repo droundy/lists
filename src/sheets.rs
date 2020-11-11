@@ -89,6 +89,22 @@ impl Character {
                 return Some(cnew);
             }
         }
+        if change.kind == "new-section" {
+            let s = Section {
+                title: "New".to_string(),
+                title_id: memorable_wordlist::camel_case(44),
+                content: "Content".to_string(),
+                content_id: memorable_wordlist::camel_case(44),
+                table: Vec::new(),
+            };
+            self.sections.push(s.clone());
+            return Some(Change {
+                kind: "new-section".to_string(),
+                id: "main".to_string(),
+                html: display_as::format_as!(HTML, s),
+                color: change.color.clone(),
+            });
+        }
         if change.kind == "change" {
             let s = Section {
                 title: change.html.clone(),
@@ -147,15 +163,7 @@ pub fn sheets() -> impl Filter<Extract = impl warp::Reply, Error = warp::Rejecti
             let code = percent_encoding::percent_decode(code.as_bytes())
                 .decode_utf8()
                 .unwrap();
-            let mut c = Character::read(&code, &character_name);
-            c.sections.push(Section {
-                title: "Edit this to create a new section".to_string(),
-                title_id: memorable_wordlist::camel_case(44),
-                content: "".to_string(),
-                content_id: memorable_wordlist::camel_case(44),
-                table: Vec::new(),
-            });
-            display(HTML, &c).into_response()
+            display(HTML, &Character::read(&code, &character_name)).into_response()
         });
     // let party = path!("sheets" / String).map(|code: String| {
     //     println!("Party: {}", code);
@@ -238,7 +246,12 @@ struct Change {
     color: String,
 }
 
-async fn process_message(code: &str, character: &str, mut msg: warp::ws::Message, editors: &Editors) {
+async fn process_message(
+    code: &str,
+    character: &str,
+    mut msg: warp::ws::Message,
+    editors: &Editors,
+) {
     let place = format!("{}/{}", code, character);
     let mut character = Character::read(code, character);
     let change: Change = serde_json::from_str(msg.to_str().expect("utf8")).expect("parsing sonj");
