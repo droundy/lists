@@ -222,12 +222,13 @@ struct Change {
 }
 
 async fn process_message(code: &str, character: &str, msg: warp::ws::Message, editors: &Editors) {
+    let place = format!("{}/{}", code, character);
     let mut character = Character::read(code, character);
     let change: Change = serde_json::from_str(msg.to_str().expect("utf8")).expect("parsing sonj");
     character.change(&change);
     println!("character is {:?}", character);
     character.save();
-    for tx in editors.read().await.get(code).iter().flat_map(|x| x.iter()) {
+    for tx in editors.read().await.get(&place).unwrap().iter() {
         println!("Sending {:?} to {:?}", msg, tx);
         if let Err(_disconnected) = tx.send(Ok(msg.clone())) {
             // The tx is disconnected, our `user_disconnected` code
