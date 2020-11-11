@@ -81,7 +81,7 @@
                 elem.style.backgroundColor = msg.color;
             }
         }
-        if (msg.kind == 'new-section' && mycolor != msg.color) {
+        if (msg.kind == 'new-section') {
             let main = document.getElementById('main');
             let div = document.createElement('div');
             div.innerHTML = msg.html;
