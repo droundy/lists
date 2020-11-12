@@ -36,6 +36,7 @@
     .table .row {
         display: contents;
     }
+
     .row *:first-child {
         grid-column: 1;
     }
@@ -61,13 +62,11 @@
     let mycolor = randomColor(10);
     const ws = new WebSocket('ws://' + location.host + '/sheets/ws/[% self.code %]/[% self.name %]');
     console.log('did websocket');
-    ws.onopen = function () {
-        console.log('connected');
-
+    let set_hooks = function () {
         var elems = document.querySelectorAll('[contenteditable]'), i;
         for (i = 0; i < elems.length; ++i) {
             let elem = elems[i];
-            elem.addEventListener('input', function () {
+            elem.oninput = function () {
                 var id = elem.id;
                 if (id == '') {
                     id = elem.parentElement.id;
@@ -78,43 +77,48 @@
                     'html': elem.innerHTML,
                     'color': mycolor,
                 }));
-            });
+            };
         }
         let newsection = document.getElementById('new-section');
-        newsection.addEventListener('click', function () {
+        newsection.onclick = function () {
             ws.send(JSON.stringify({
                 'kind': 'new-section',
                 'id': 'main',
                 'html': '',
                 'color': mycolor,
             }));
-        });
+        };
         // Set onclick on newrow buttons
         elems = document.querySelectorAll('.newrow');
         for (i = 0; i < elems.length; ++i) {
             let elem = elems[i];
-            elem.addEventListener('click', function () {
+            elem.onclick = function () {
                 ws.send(JSON.stringify({
                     'kind': 'new-row',
                     'id': elem.parentElement.id,
                     'html': '',
                     'color': mycolor,
                 }));
-            });
+            };
         }
         // Set onclick on newitem buttons
         elems = document.querySelectorAll('.newitem');
         for (i = 0; i < elems.length; ++i) {
             let elem = elems[i];
-            elem.addEventListener('click', function () {
+            elem.onclick = function () {
                 ws.send(JSON.stringify({
                     'kind': 'new-item',
                     'id': elem.parentElement.id,
                     'html': '',
                     'color': mycolor,
                 }));
-            });
+            };
         }
+    };
+    ws.onopen = function () {
+        console.log('connected');
+
+        set_hooks();
     };
     var timer = setTimeout(goWhite, 1000);
     ws.onmessage = function (event) {
@@ -128,7 +132,7 @@
                 timer = setTimeout(goWhite, 1000);
                 elem.innerHTML = msg.html;
                 elem.style.backgroundColor = msg.color;
-                ws.onopen();
+                set_hooks();
             }
         }
         if (msg.kind == 'replace') {
@@ -140,7 +144,7 @@
                 elem.parentElement.replaceChild(div.firstChild, elem);
                 clearTimeout(timer);
                 timer = setTimeout(goWhite, 1000);
-                ws.onopen();
+                set_hooks();
             }
         }
         if (msg.kind == 'new-section') {
@@ -149,14 +153,14 @@
             div.innerHTML = msg.html;
             console.log('lastchild:', main.lastChild);
             main.insertBefore(div.firstChild, main.lastChild.previousSibling);
-            ws.onopen();
+            set_hooks();
         }
         if (msg.kind == 'new-row') {
             let section = document.getElementById(msg.id);
             let div = document.createElement('div');
             div.innerHTML = msg.html;
             section.appendChild(div.firstChild);
-            ws.onopen();
+            set_hooks();
         }
     };
     ws.onclose = function () {
