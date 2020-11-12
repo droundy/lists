@@ -30,7 +30,7 @@
     details {
         background-color: #222;
         border-radius: 0.5em;
-        padding: 0.25em;
+        padding: 0.5em;
     }
 
     .table {
@@ -59,8 +59,29 @@
 
     main {
         display: grid;
-        grid-template-columns: fit-content(40em) fit-content(40em) fit-content(40em) fit-content(40em) fit-content(40em) fit-content(40em);
-        gap: 0.25em;
+        grid-template-columns: fit-content(40em);
+        gap: 0.5em;
+    }
+
+    @media (min-width: 40em) {
+        main {
+            grid-template-columns: fit-content(40em) fit-content(40em);
+        }
+    }
+    @media (min-width: 60em) {
+        main {
+            grid-template-columns: fit-content(40em) fit-content(40em) fit-content(40em);
+        }
+    }
+    @media (min-width: 80em) {
+        main {
+            grid-template-columns: fit-content(40em) fit-content(40em) fit-content(40em) fit-content(40em);
+        }
+    }
+    @media (min-width: 100em) {
+        main {
+            grid-template-columns: fit-content(40em) fit-content(40em) fit-content(40em) fit-content(40em) fit-content(40em);
+        }
     }
 </style>
 
