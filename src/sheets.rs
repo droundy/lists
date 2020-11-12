@@ -23,6 +23,7 @@ struct Section {
     title_id: String,
     content: String,
     content_id: String,
+    table_id: String,
     table: Vec<Row>,
 }
 #[with_template("[%" "%]" "section.html")]
@@ -38,6 +39,27 @@ impl Section {
                 self.content = change.html.clone();
                 return Some(change.clone());
             }
+        } else if change.kind == "new-row" && change.id == self.table_id {
+            let r = Row {
+                id: memorable_wordlist::camel_case(44),
+                items: vec![Item {
+                    id: memorable_wordlist::camel_case(44),
+                    html: "".to_string(),
+                }],
+            };
+            println!("pusing new row!");
+            self.table.push(r.clone());
+            return Some(Change {
+                kind: "new-row".to_string(),
+                id: self.table_id.clone(),
+                color: change.color.clone(),
+                html: display_as::format_as!(HTML, r),
+            });
+        }
+        for r in self.table.iter_mut() {
+            if let Some(c) = r.change(change) {
+                return Some(c);
+            }
         }
         None
     }
@@ -45,21 +67,41 @@ impl Section {
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 struct Row {
     id: String,
-    action: Action,
     items: Vec<Item>,
 }
+impl Row {
+    fn change(&mut self, change: &Change) -> Option<Change> {
+        if change.kind == "change" && change.id == self.id {
+            println!("this is odd!")
+        }
+        if change.kind == "new-item" && change.id == self.id {
+            self.items.push(Item {
+                id: memorable_wordlist::camel_case(44),
+                html: "_".to_string(),
+            });
+            return Some(Change {
+                kind: "replace".to_string(),
+                id: self.id.clone(),
+                html: display_as::format_as!(HTML, self),
+                color: change.color.clone(),
+            });
+        }
+        for i in self.items.iter_mut() {
+            if change.id == i.id {
+                i.html = change.html.clone();
+                return Some(change.clone());
+            }
+        }
+        None
+    }
+}
+#[with_template("[%" "%]" "row.html")]
+impl DisplayAs<HTML> for Row {}
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 struct Item {
     id: String,
-    value: String,
-}
-
-#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
-enum Action {
-    Spell { name: String, points: i32 },
-    Psychic { name: String, psi: i32 },
-    Generic { name: String },
+    html: String,
 }
 
 impl Character {
@@ -91,10 +133,11 @@ impl Character {
         }
         if change.kind == "new-section" {
             let s = Section {
-                title: "New".to_string(),
+                title: "".to_string(),
                 title_id: memorable_wordlist::camel_case(44),
-                content: "Content".to_string(),
+                content: "".to_string(),
                 content_id: memorable_wordlist::camel_case(44),
+                table_id: memorable_wordlist::camel_case(44),
                 table: Vec::new(),
             };
             self.sections.push(s.clone());
@@ -111,10 +154,10 @@ impl Character {
                 title_id: change.id.clone(),
                 content: "Edit me".to_string(),
                 content_id: memorable_wordlist::camel_case(44),
+                table_id: memorable_wordlist::camel_case(44),
                 table: Vec::new(),
             };
             self.sections.push(s.clone());
-            println!("I just pushed a new section {:?}", change.html);
             return Some(Change {
                 kind: "new-section".to_string(),
                 id: "sections".to_string(),
@@ -261,7 +304,6 @@ async fn process_message(
     println!("character is {:?}", character);
     character.save();
     for tx in editors.read().await.get(&place).unwrap().iter() {
-        println!("Sending {} to {:?}", msg.to_str().unwrap(), tx);
         if let Err(_disconnected) = tx.send(Ok(msg.clone())) {
             // The tx is disconnected, our `user_disconnected` code
             // should be happening in another task, nothing more to

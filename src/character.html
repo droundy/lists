@@ -18,6 +18,27 @@
         color: #ffffe0;
         background-color: black;
     }
+
+    .newrow {
+        float: right;
+    }
+
+    summary {
+        display: inline-block;
+    }
+
+    .table {
+        display: grid;
+        grid-template-columns: fit-content(20em) fit-content(20em) fit-content(20em) fit-content(20em) fit-content(20em) fit-content(20em);
+        gap: 0.5em;
+    }
+
+    .table .row {
+        display: contents;
+    }
+    .row *:first-child {
+        grid-column: 1;
+    }
 </style>
 
 <script type="text/javascript">
@@ -31,10 +52,10 @@
         return '#' + randomChannel(brightness) + randomChannel(brightness) + randomChannel(brightness);
     }
     function goWhite() {
-        var elems = document.querySelectorAll('[contenteditable]'), i;
+        var elems = document.querySelectorAll('*'), i;
         for (i = 0; i < elems.length; ++i) {
             let elem = elems[i];
-            elem.style.backgroundColor = 'black';
+            elem.style.backgroundColor = '';
         }
     }
     let mycolor = randomColor(10);
@@ -44,14 +65,16 @@
         console.log('connected');
 
         var elems = document.querySelectorAll('[contenteditable]'), i;
-        console.log('got elems', elems);
         for (i = 0; i < elems.length; ++i) {
             let elem = elems[i];
-            console.log('added listener to', elem);
             elem.addEventListener('input', function () {
+                var id = elem.id;
+                if (id == '') {
+                    id = elem.parentElement.id;
+                }
                 ws.send(JSON.stringify({
                     'kind': 'change',
-                    'id': elem.id,
+                    'id': id,
                     'html': elem.innerHTML,
                     'color': mycolor,
                 }));
@@ -66,6 +89,32 @@
                 'color': mycolor,
             }));
         });
+        // Set onclick on newrow buttons
+        elems = document.querySelectorAll('.newrow');
+        for (i = 0; i < elems.length; ++i) {
+            let elem = elems[i];
+            elem.addEventListener('click', function () {
+                ws.send(JSON.stringify({
+                    'kind': 'new-row',
+                    'id': elem.parentElement.id,
+                    'html': '',
+                    'color': mycolor,
+                }));
+            });
+        }
+        // Set onclick on newitem buttons
+        elems = document.querySelectorAll('.newitem');
+        for (i = 0; i < elems.length; ++i) {
+            let elem = elems[i];
+            elem.addEventListener('click', function () {
+                ws.send(JSON.stringify({
+                    'kind': 'new-item',
+                    'id': elem.parentElement.id,
+                    'html': '',
+                    'color': mycolor,
+                }));
+            });
+        }
     };
     var timer = setTimeout(goWhite, 1000);
     ws.onmessage = function (event) {
@@ -79,6 +128,19 @@
                 timer = setTimeout(goWhite, 1000);
                 elem.innerHTML = msg.html;
                 elem.style.backgroundColor = msg.color;
+                ws.onopen();
+            }
+        }
+        if (msg.kind == 'replace') {
+            let elem = document.getElementById(msg.id);
+            if (elem) {
+                let div = document.createElement('div');
+                div.innerHTML = msg.html;
+                div.firstChild.style.backgroundColor = msg.color;
+                elem.parentElement.replaceChild(div.firstChild, elem);
+                clearTimeout(timer);
+                timer = setTimeout(goWhite, 1000);
+                ws.onopen();
             }
         }
         if (msg.kind == 'new-section') {
@@ -87,6 +149,14 @@
             div.innerHTML = msg.html;
             console.log('lastchild:', main.lastChild);
             main.insertBefore(div.firstChild, main.lastChild.previousSibling);
+            ws.onopen();
+        }
+        if (msg.kind == 'new-row') {
+            let section = document.getElementById(msg.id);
+            let div = document.createElement('div');
+            div.innerHTML = msg.html;
+            section.appendChild(div.firstChild);
+            ws.onopen();
         }
     };
     ws.onclose = function () {
