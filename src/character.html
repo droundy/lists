@@ -27,6 +27,12 @@
         display: inline-block;
     }
 
+    details {
+        background-color: #222;
+        border-radius: 0.5em;
+        padding: 0.25em;
+    }
+
     .table {
         display: grid;
         grid-template-columns: fit-content(20em) fit-content(20em) fit-content(20em) fit-content(20em) fit-content(20em) fit-content(20em);
@@ -39,6 +45,22 @@
 
     .row *:first-child {
         grid-column: 1;
+    }
+
+    button {
+        font-size: xx-small;
+        background: none !important;
+        border: none;
+        padding: 0 !important;
+        color: #69f;
+        text-decoration: underline;
+        cursor: pointer;
+    }
+
+    main {
+        display: grid;
+        grid-template-columns: fit-content(40em) fit-content(40em) fit-content(40em) fit-content(40em) fit-content(40em) fit-content(40em);
+        gap: 0.25em;
     }
 </style>
 
@@ -169,10 +191,10 @@
 </script>
 
 <body>
+    <header>
+        <h1>[% self.name %]</h1>
+    </header>
     <main id="main">
-        <header>
-            <h1>[% self.name %]</h1>
-        </header>
         [%
         for s in self.sections.iter() {
         s
