@@ -317,5 +317,5 @@ async fn process_message(
 async fn ws_disconnected(_editors: &Editors) {}
 
 struct Index;
-#[with_template("[%" "%]" "index.html")]
+#[with_template("[%" "%]" "sheet-index.html")]
 impl DisplayAs<HTML> for Index {}
