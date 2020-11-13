@@ -235,7 +235,6 @@ async fn editor_connected(
     ws: warp::ws::WebSocket,
     editors: Editors,
 ) {
-    println!("Someone connected.");
     // Split the socket into a sender and receive of messages.
     let (user_ws_tx, mut user_ws_rx) = ws.split();
 
@@ -303,7 +302,6 @@ async fn process_message(
     if let Some(newc) = character.change(&change) {
         msg = warp::ws::Message::text(serde_json::to_string(&newc).unwrap());
     }
-    println!("character is {:?}", character);
     character.save();
     for tx in editors.read().await.get(&place).unwrap().iter() {
         if let Err(_disconnected) = tx.send(Ok(msg.clone())) {
