@@ -42,7 +42,7 @@ impl Section {
                 id: memorable_wordlist::camel_case(44),
                 items: vec![Item {
                     id: memorable_wordlist::camel_case(44),
-                    html: "".to_string(),
+                    html: "_".to_string(),
                 }],
             };
             println!("pusing new row!");
