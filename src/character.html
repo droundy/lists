@@ -31,14 +31,19 @@
         background-color: #222;
         border-radius: 0.5em;
         padding: 0.5em;
+        grid-row: span 30;
+        margin: 0.25em;
+    }
+    details:nth-child(1) {
+        grid-row: span 28;
+    }
+    details:nth-child(3) {
+        grid-row: span 29;
     }
     details:not([open]) {
         background-color: #622;
         grid-column: -2;
         grid-row: span 7;
-    }
-    details[open] {
-        grid-row: span 30;
     }
 
     .table {
@@ -69,7 +74,7 @@
     main {
         display: grid;
         grid-template-columns: repeat(auto-fill, minmax(20em, 1fr));
-        gap: 0.5em;
+        gap: 0em;
         grid-auto-flow: row dense;
     }
 </style>
