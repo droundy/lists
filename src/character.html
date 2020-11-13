@@ -138,11 +138,11 @@
 </script>
 
 <body>
-    <header>
-        <h1>[% self.name %]</h1>
-    </header>
     <main id="main">
-        [%
+        <header>
+            <h1>[% self.name %]</h1>
+        </header>
+            [%
         for s in self.sections.iter() {
         s
         }
