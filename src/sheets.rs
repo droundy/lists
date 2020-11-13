@@ -10,8 +10,6 @@ use warp::{path, Filter};
 struct Character {
     code: String,
     name: String,
-    spell_points: Option<(i32, i32)>,
-    psi: Option<(i32, i32)>,
     sections: Vec<Section>,
 }
 #[with_template("[%" "%]" "character.html")]
@@ -114,8 +112,6 @@ impl Character {
         Character {
             code: code.to_string(),
             name: name.to_string(),
-            spell_points: None,
-            psi: None,
             sections: Vec::new(),
         }
     }
