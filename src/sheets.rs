@@ -217,6 +217,12 @@ pub fn sheets() -> impl Filter<Extract = impl warp::Reply, Error = warp::Rejecti
         .and(editors)
         .map(
             |code: String, character: String, ws: warp::ws::Ws, editors| {
+                let character = percent_encoding::percent_decode(character.as_bytes())
+                    .decode_utf8()
+                    .unwrap().to_string();
+                let code = percent_encoding::percent_decode(code.as_bytes())
+                    .decode_utf8()
+                    .unwrap().to_string();
                 ws.on_upgrade(move |socket| editor_connected(code, character, socket, editors))
             },
         );
