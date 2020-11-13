@@ -66,7 +66,7 @@ details:nth-child(3) {
 }
 
 details:not([open]) {
-    background-color: #622;
+    background-color: #311;
     grid-column: -2;
     grid-row: span 7;
 }
