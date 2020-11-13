@@ -4,6 +4,65 @@
 }
 
 body {
-    color: white;
+    color: #ffffe0;
     background-color: black;
+}
+
+.newrow {
+    float: right;
+}
+
+summary {
+    display: inline-block;
+}
+
+details {
+    background-color: #222;
+    border-radius: 0.5em;
+    padding: 0.5em;
+    grid-row: span 30;
+    margin: 0.25em;
+}
+details:nth-child(1) {
+    grid-row: span 28;
+}
+details:nth-child(3) {
+    grid-row: span 29;
+}
+details:not([open]) {
+    background-color: #622;
+    grid-column: -2;
+    grid-row: span 7;
+}
+
+.table {
+    display: grid;
+    grid-template-columns: fit-content(15em) fit-content(15em) fit-content(15em) fit-content(15em) fit-content(15em) fit-content(15em);
+    grid-template-rows: masonry;
+    gap: 0.5em;
+}
+
+.table .row {
+    display: contents;
+}
+
+.row *:first-child {
+    grid-column: 1;
+}
+
+button {
+    font-size: xx-small;
+    background: none !important;
+    border: none;
+    padding: 0 !important;
+    color: #69f;
+    text-decoration: underline;
+    cursor: pointer;
+}
+
+main {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(20em, 1fr));
+    gap: 0em;
+    grid-auto-flow: row dense;
 }
