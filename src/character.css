@@ -17,18 +17,22 @@ summary {
 }
 
 details {
+    break-inside: avoid-column;
     background-color: #222;
     border-radius: 0.5em;
     padding: 0.5em;
     grid-row: span 30;
-    margin: 0.25em;
+    margin: 0 0.25 0.5 0.25em;
 }
+
 details:nth-child(1) {
     grid-row: span 28;
 }
+
 details:nth-child(3) {
     grid-row: span 29;
 }
+
 details:not([open]) {
     background-color: #622;
     grid-column: -2;
@@ -61,8 +65,28 @@ button {
 }
 
 main {
-    display: grid;
+    /* display: grid;
     grid-template-columns: repeat(auto-fill, minmax(20em, 1fr));
     gap: 0em;
-    grid-auto-flow: row dense;
+    grid-auto-flow: row dense; */
+    columns: 1;
+    column-gap: 1em;
+}
+
+@media (min-width: 30em) {
+    main {
+        columns: 2;
+    }
+}
+
+@media (min-width: 45em) {
+    main {
+        columns: 3;
+    }
+}
+
+@media (min-width: 60em) {
+    main {
+        columns: 4;
+    }
 }
