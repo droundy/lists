@@ -25,7 +25,11 @@
         }
     }
     let mycolor = randomColor(10);
-    const ws = new WebSocket('ws://' + location.host + '/sheets/ws/[% self.code %]/[% self.name %]');
+    var ws_protocol = 'ws://';
+    if (location.protocol == 'https:') {
+        ws_protocol = 'wss://';
+    }
+    const ws = new WebSocket(ws_protocol + location.host + '/sheets/ws/[% self.code %]/[% self.name %]');
     console.log('did websocket');
     let set_hooks = function () {
         var elems = document.querySelectorAll('[contenteditable]'), i;
