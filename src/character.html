@@ -125,11 +125,13 @@
             set_hooks();
         }
         if (msg.kind == 'new-row') {
-            let section = document.getElementById(msg.id);
-            let div = document.createElement('div');
-            div.innerHTML = msg.html;
-            section.appendChild(div.firstChild);
-            set_hooks();
+            let table = document.querySelector('#' + msg.id + ' .table');
+            if (table) {
+                let div = document.createElement('div');
+                div.innerHTML = msg.html;
+                table.appendChild(div.firstChild);
+                set_hooks();
+            }
         }
     };
     ws.onclose = function () {
@@ -142,7 +144,7 @@
         <header>
             <h1>[% self.name %]</h1>
         </header>
-            [%
+        [%
         for s in self.sections.iter() {
         s
         }
