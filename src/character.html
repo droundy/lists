@@ -33,7 +33,7 @@
     const ws = new WebSocket(ws_protocol + location.host + '/sheets/ws/[% self.code %]/[% self.name %]');
     console.log('did websocket');
     let set_hooks = function () {
-        var elems = document.querySelectorAll('[contenteditable]'), i;
+        var elems = document.querySelectorAll('.ce'), i;
         for (i = 0; i < elems.length; ++i) {
             let elem = elems[i];
             elem.oninput = function () {
