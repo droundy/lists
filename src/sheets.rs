@@ -56,6 +56,15 @@ impl Section {
         }
         for r in self.table.iter_mut() {
             if let Some(c) = r.change(change) {
+                if change.kind == "del-item" && self.table.iter().any(|i| i.items.len() == 0) {
+                    self.table.retain(|r| r.items.len() > 0);
+                    return Some(Change {
+                        kind: "replace".to_string(),
+                        id: self.table_id.clone(),
+                        html: display_as::format_as!(HTML, self),
+                        color: change.color.clone(),
+                    });
+                }
                 return Some(c);
             }
         }
@@ -77,6 +86,15 @@ impl Row {
                 id: memorable_wordlist::camel_case(44),
                 html: "_".to_string(),
             });
+            return Some(Change {
+                kind: "replace".to_string(),
+                id: self.id.clone(),
+                html: display_as::format_as!(HTML, self),
+                color: change.color.clone(),
+            });
+        }
+        if change.kind == "del-item" && change.id == self.id {
+            self.items.retain(|x| x.html.len() > 0);
             return Some(Change {
                 kind: "replace".to_string(),
                 id: self.id.clone(),
@@ -219,10 +237,12 @@ pub fn sheets() -> impl Filter<Extract = impl warp::Reply, Error = warp::Rejecti
             |code: String, character: String, ws: warp::ws::Ws, editors| {
                 let character = percent_encoding::percent_decode(character.as_bytes())
                     .decode_utf8()
-                    .unwrap().to_string();
+                    .unwrap()
+                    .to_string();
                 let code = percent_encoding::percent_decode(code.as_bytes())
                     .decode_utf8()
-                    .unwrap().to_string();
+                    .unwrap()
+                    .to_string();
                 ws.on_upgrade(move |socket| editor_connected(code, character, socket, editors))
             },
         );

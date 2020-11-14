@@ -2,5 +2,8 @@
     [% for item in self.items.iter() { %]
     <div id="[% item.id %]" contenteditable="true">[% item.html as UTF8 %]</div>
     [% } %]
-    <button class="newitem">New item</button>
+    <div>
+        <button class="delitem md-18"><i class="material-icons">remove_circle</i></button>
+        <button class="newitem md-18"><i class="material-icons">add_circle</i></button>
+    </div>
 </div>
