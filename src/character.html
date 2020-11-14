@@ -97,11 +97,38 @@
                 }));
             };
         }
+        let startedit = document.querySelector('.startedit');
+        let stopedit = document.querySelector('.stopedit');
+        startedit.onclick = function () {
+            elems = document.querySelectorAll('.ce');
+            for (i = 0; i < elems.length; ++i) {
+                elems[i].setAttribute('contenteditable', true);
+            }
+            elems = document.querySelectorAll('button');
+            for (i = 0; i < elems.length; ++i) {
+                elems[i].style.visibility = 'visible';
+            }
+            startedit.style.visibility = 'hidden';
+            stopedit.style.visibility = 'visible';
+        };
+        stopedit.onclick = function () {
+            elems = document.querySelectorAll('.ce');
+            for (i = 0; i < elems.length; ++i) {
+                elems[i].setAttribute('contenteditable', false);
+            }
+            elems = document.querySelectorAll('button');
+            for (i = 0; i < elems.length; ++i) {
+                elems[i].style.visibility = 'hidden';
+            }
+            startedit.style.visibility = 'visible';
+            stopedit.style.visibility = 'hidden';
+        };
     };
     ws.onopen = function () {
         console.log('connected');
 
         set_hooks();
+        document.querySelector('.stopedit').onclick();
     };
     var timer = setTimeout(goWhite, 1000);
     ws.onmessage = function (event) {
@@ -150,13 +177,18 @@
     };
     ws.onclose = function () {
         console.log('disconnected');
+        document.querySelector('.stopedit').onclick();
+        document.querySelector('.startedit').style.visibility = 'hidden';
     };
 </script>
 
 <body>
     <main id="main">
         <header>
-            <h1>[% self.name %]</h1>
+            <h1>[% self.name %]
+                <button class="startedit" id="new-section"><i class="material-icons">create</i></button>
+                <button class="stopedit" id="new-section"><i class="material-icons">done</i></button>
+            </h1>
         </header>
         [%
         for s in self.sections.iter() {

@@ -39,8 +39,35 @@ main {
 }
 
 h1 {
-    font-size: large;
+    font-size: 20px;
     margin-bottom: 1em;
+    position: relative;
+}
+
+button {
+    background: none !important;
+    border: none;
+    padding: 0 !important;
+    color: #080;
+    cursor: pointer;
+}
+
+.stopedit .material-icons, .startedit .material-icons {
+    color: #00d;
+    font-size: 18px;
+    background-color: #55f;
+    border-radius: 10px;
+    padding: 1px;
+}
+
+.startedit, .stopedit {
+    position: absolute;
+    right: 0;
+    top: 0;
+}
+
+.startedit {
+    visibility: visible;
 }
 
 .newrow {
@@ -52,16 +79,9 @@ h1 {
 .newitem .material-icons, .delitem .material-icons {
     font-size: 14px;
 }
+
 .delitem {
     color: #700;
-}
-
-button {
-    background: none !important;
-    border: none;
-    padding: 0 !important;
-    color: #080;
-    cursor: pointer;
 }
 
 summary {

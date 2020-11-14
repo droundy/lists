@@ -1,6 +1,6 @@
 <div id="[% self.id %]" class="row">
     [% for item in self.items.iter() { %]
-    <div id="[% item.id %]" contenteditable="true">[% item.html as UTF8 %]</div>
+    <div id="[% item.id %]" class="ce">[% item.html as UTF8 %]</div>
     [% } %]
     <div>
         <button class="delitem md-18"><i class="material-icons">remove_circle</i></button>

@@ -1,7 +1,7 @@
 <details [% if self.title.contains('!') { %] open [% } %]id="[% self.table_id %]">
-    <summary><span id="[% self.title_id %]" contenteditable="true">[% self.title as UTF8 %]</span></summary>
+    <summary><span id="[% self.title_id %]" class="ce">[% self.title as UTF8 %]</span></summary>
     <button class="newrow"><i class="material-icons">add_circle</i></button>
-    <div id="[% self.content_id %]" contenteditable="true">[% self.content as UTF8 %]</div>
+    <div id="[% self.content_id %]" class="ce">[% self.content as UTF8 %]</div>
     <div class="table">
     [% for row in self.table.iter() { row } %]
     </div>
