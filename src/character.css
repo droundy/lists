@@ -87,6 +87,12 @@ summary {
     display: inline-block;
 }
 
+summary i {
+    position: absolute;
+    right: 0;
+    top: 0.125em;
+}
+
 details {
     break-inside: avoid-column;
     background-color: #111;
