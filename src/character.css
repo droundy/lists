@@ -9,7 +9,6 @@
 body {
     color: #ffffe0;
     background-color: black;
-    position: relative;
 }
 
 main {
@@ -61,7 +60,7 @@ button {
 }
 
 #startedit, #stopedit {
-    position: absolute;
+    position: fixed;
     bottom: 1em;
     right: 1em;
 }
