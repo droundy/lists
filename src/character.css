@@ -41,7 +41,6 @@ main {
 h1 {
     font-size: 20px;
     margin-bottom: 1em;
-    position: relative;
 }
 
 button {
@@ -52,18 +51,18 @@ button {
     cursor: pointer;
 }
 
-.stopedit .material-icons, .startedit .material-icons {
+#stopedit .material-icons, #startedit .material-icons {
     color: #00d;
-    font-size: 18px;
+    font-size: 24px;
     background-color: #55f;
-    border-radius: 10px;
-    padding: 1px;
+    border-radius: 1em;
+    padding: 0.5em;
 }
 
-.startedit, .stopedit {
+#startedit, #stopedit {
     position: absolute;
-    right: 0;
-    top: 0;
+    bottom: 1em;
+    right: 1em;
 }
 
 .startedit {

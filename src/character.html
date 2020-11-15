@@ -97,8 +97,8 @@
                 }));
             };
         }
-        let startedit = document.querySelector('.startedit');
-        let stopedit = document.querySelector('.stopedit');
+        let startedit = document.getElementById('startedit');
+        let stopedit = document.getElementById('stopedit');
         startedit.onclick = function () {
             elems = document.querySelectorAll('.ce');
             for (i = 0; i < elems.length; ++i) {
@@ -128,7 +128,7 @@
         console.log('connected');
 
         set_hooks();
-        document.querySelector('.stopedit').onclick();
+        document.getElementById('stopedit').onclick();
     };
     var timer = setTimeout(goWhite, 1000);
     ws.onmessage = function (event) {
@@ -177,18 +177,17 @@
     };
     ws.onclose = function () {
         console.log('disconnected');
-        document.querySelector('.stopedit').onclick();
-        document.querySelector('.startedit').style.visibility = 'hidden';
+        document.getElementById('stopedit').onclick();
+        document.getElementById('startedit').style.visibility = 'hidden';
     };
 </script>
 
 <body>
+    <button id="startedit"><i class="material-icons">create</i></button>
+    <button id="stopedit"><i class="material-icons">done</i></button>
     <main id="main">
         <header>
-            <h1>[% self.name %]
-                <button class="startedit"><i class="material-icons">create</i></button>
-                <button class="stopedit"><i class="material-icons">done</i></button>
-            </h1>
+            <h1>[% self.name %]</h1>
         </header>
         [%
         for s in self.sections.iter() {
