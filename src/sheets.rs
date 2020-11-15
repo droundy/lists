@@ -320,7 +320,7 @@ async fn process_message(
     let mut character = Character::read(code, character);
     match msg.to_str().map(|s| serde_json::from_str(s)) {
         Err(e) => {
-            eprintln!("Bad UTF8: {:?}", e);
+            eprintln!("Bad UTF8: {:?} {:?}", e, msg);
         }
         Ok(Err(e)) => {
             eprintln!("Bad JSON: {:?}", e);
