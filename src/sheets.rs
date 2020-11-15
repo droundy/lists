@@ -318,17 +318,26 @@ async fn process_message(
 ) {
     let place = format!("{}/{}", code, character);
     let mut character = Character::read(code, character);
-    let change: Change = serde_json::from_str(msg.to_str().expect("utf8")).expect("parsing sonj");
-    if let Some(newc) = character.change(&change) {
-        msg = warp::ws::Message::text(serde_json::to_string(&newc).unwrap());
-    }
-    character.save();
-    for tx in editors.read().await.get(&place).unwrap().iter() {
-        if let Err(_disconnected) = tx.send(Ok(msg.clone())) {
-            // The tx is disconnected, our `user_disconnected` code
-            // should be happening in another task, nothing more to
-            // do here.
-            println!("Websocket disconnected?");
+    match msg.to_str().map(|s| serde_json::from_str(s)) {
+        Err(e) => {
+            eprintln!("Bad UTF8: {:?}", e);
+        }
+        Ok(Err(e)) => {
+            eprintln!("Bad JSON: {:?}", e);
+        }
+        Ok(Ok(change)) => {
+            if let Some(newc) = character.change(&change) {
+                msg = warp::ws::Message::text(serde_json::to_string(&newc).unwrap());
+            }
+            character.save();
+            for tx in editors.read().await.get(&place).unwrap().iter() {
+                if let Err(_disconnected) = tx.send(Ok(msg.clone())) {
+                    // The tx is disconnected, our `user_disconnected` code
+                    // should be happening in another task, nothing more to
+                    // do here.
+                    println!("Websocket disconnected?");
+                }
+            }
         }
     }
     // editors.write().await.get_mut(code).unwrap().retain(|x| !x.is_closed());
