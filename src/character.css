@@ -88,12 +88,14 @@ summary {
 }
 
 summary i {
+    -webkit-user-select: none;
     position: absolute;
     right: 0;
     top: 0.125em;
 }
 
 details {
+    -webkit-user-drag: element;
     break-inside: avoid-column;
     background-color: #111;
     border-radius: 0.5em;

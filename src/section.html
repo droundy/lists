@@ -1,4 +1,4 @@
-<details [% if self.title.contains('!') { %] open [% } %]id="[% self.table_id %]">
+<details draggable="true" [% if self.title.contains('!') { %] open [% } %]id="[% self.table_id %]">
     <summary>
         <span id="[% self.title_id %]" class="ce" contenteditable="true">[% self.title as UTF8 %]</span>
         <i class="material-icons">drag_indicator</i>
