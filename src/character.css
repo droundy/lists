@@ -9,6 +9,7 @@
 body {
     color: #ffffe0;
     background-color: black;
+    position: relative;
 }
 
 main {
