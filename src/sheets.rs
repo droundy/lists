@@ -147,7 +147,7 @@ impl Character {
         }
         if change.kind == "new-section" {
             let s = Section {
-                title: "".to_string(),
+                title: chrono::Utc::now().format("%A, %B %e").to_string(),
                 title_id: memorable_wordlist::camel_case(44),
                 content: "".to_string(),
                 content_id: memorable_wordlist::camel_case(44),
