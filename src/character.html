@@ -145,8 +145,7 @@
                 elem.style.backgroundColor = msg.color;
                 set_hooks();
             }
-        }
-        if (msg.kind == 'replace') {
+        } else if (msg.kind == 'replace') {
             let elem = document.getElementById(msg.id);
             if (elem) {
                 let div = document.createElement('div');
@@ -157,16 +156,14 @@
                 timer = setTimeout(goWhite, 1000);
                 set_hooks();
             }
-        }
-        if (msg.kind == 'new-section') {
+        } else if (msg.kind == 'new-section') {
             let main = document.getElementById('main');
             let div = document.createElement('div');
             div.innerHTML = msg.html;
             console.log('lastchild:', main.lastChild);
             main.insertBefore(div.firstChild, main.lastChild.previousSibling);
             set_hooks();
-        }
-        if (msg.kind == 'new-row') {
+        } else if (msg.kind == 'new-row') {
             let table = document.querySelector('#' + msg.id + ' .table');
             if (table) {
                 let div = document.createElement('div');
@@ -174,6 +171,12 @@
                 table.appendChild(div.firstChild);
                 set_hooks();
             }
+        } else if (msg.kind == 'move') {
+            let elem = document.getElementById(msg.id);
+            console.log('elem', elem, msg.id);
+            // let div = elem.nextElementSibling;
+        } else {
+            console.log('unexpected change:', msg);
         }
     };
     ws.onclose = function () {
@@ -193,28 +196,36 @@
         ev.target.classList.add('targeted');
         ev.preventDefault();
     }
+    function mydragleave(ev) {
+        ev.target.classList.remove('targeted');
+    }
     function mydrop(ev) {
         clearDrag();
         let moved_id = ev.dataTransfer.getData('text');
-        let new_neighbor = ev.target.previousSibling.id;
+        let new_neighbor = ev.target.previousElementSibling.id;
 
         let to_move = document.getElementById(moved_id);
-        to_move.nextSibling.parentElement.remove(to_move.nextSibling);
+        to_move.classList.remove('beingdragged');
+        console.log('about to remove', to_move.nextElementSibling);
+        to_move.parentElement.removeChild(to_move.nextElementSibling);
         let div = document.createElement('div');
         div.classList.add('droptarget');
         ev.target.parentElement.insertBefore(div, ev.target);
         ev.target.parentElement.insertBefore(to_move, ev.target);
+        console.log('sending message...', moved_id, new_neighbor);
         ws.send(JSON.stringify({
             'kind': 'move',
             'id': moved_id,
             'html': new_neighbor,
             'color': mycolor,
         }));
+        console.log('sent message');
         ev.preventDefault();
     }
     function mydrag(ev) {
         console.log('I am dragging', ev.target.id);
         clearDrag();
+        ev.target.classList.add('beingdragged');
         ev.dataTransfer.setData('text', ev.target.id);
     }
 </script>

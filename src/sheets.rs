@@ -145,6 +145,34 @@ impl Character {
                 return Some(cnew);
             }
         }
+        if change.kind == "move" {
+            let origin_index = self
+                .sections
+                .iter()
+                .enumerate()
+                .filter(|s| s.1.table_id == change.id)
+                .map(|t| t.0)
+                .next();
+            let final_index = self
+                .sections
+                .iter()
+                .enumerate()
+                .filter(|s| s.1.table_id == change.html)
+                .map(|t| t.0)
+                .next();
+            match (origin_index, final_index) {
+                (Some(o), Some(mut f)) => {
+                    let v = self.sections.remove(o);
+                    if f < o {
+                        f += 1;
+                    }
+                    self.sections.insert(f, v);
+                }
+                _ => {
+                    eprintln!("bad move change: {:?} from {:?}, to {:?}", change, origin_index, final_index);
+                }
+            }
+        }
         if change.kind == "new-section" {
             let s = Section {
                 title: chrono::Utc::now().format("%A, %B %e").to_string(),

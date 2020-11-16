@@ -88,16 +88,21 @@ details {
     position: relative;
 }
 
+.beingdragged {
+    background-color: red;
+}
+
 .droptarget {
-    height: 0.5em;
+    height: 0.001em;
+    border: 0.5em solid black;
     break-before: avoid-column;
     transition: all 0.25s;
-    border-radius: 0.5em;
+    border-radius: 10em;
 }
 
 .targeted {
     height: 1em;
-    margin: 1em;
+    border: 1em solid black;
     background-color: #555;
 }
 
