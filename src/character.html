@@ -6,6 +6,7 @@
     <link rel="stylesheet" href="character.css">
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
     <meta name="viewport" content="width=device-width, initial-scale=1">
+    <script src="DragDropTouch.js"></script>
 </head>
 
 <script type="text/javascript">
@@ -180,6 +181,42 @@
         document.getElementById('stopedit').onclick();
         document.getElementById('startedit').style.visibility = 'hidden';
     };
+    function clearDrag() {
+        elems = document.querySelectorAll('.targeted');
+        for (i = 0; i < elems.length; ++i) {
+            elems[i].classList.remove('targeted');
+        }
+    }
+    function mydragover(ev) {
+        console.log('I am dragover', ev.target.id);
+        clearDrag();
+        ev.target.classList.add('targeted');
+        ev.preventDefault();
+    }
+    function mydrop(ev) {
+        clearDrag();
+        let moved_id = ev.dataTransfer.getData('text');
+        let new_neighbor = ev.target.previousSibling.id;
+
+        let to_move = document.getElementById(moved_id);
+        to_move.nextSibling.parentElement.remove(to_move.nextSibling);
+        let div = document.createElement('div');
+        div.classList.add('droptarget');
+        ev.target.parentElement.insertBefore(div, ev.target);
+        ev.target.parentElement.insertBefore(to_move, ev.target);
+        ws.send(JSON.stringify({
+            'kind': 'move',
+            'id': moved_id,
+            'html': new_neighbor,
+            'color': mycolor,
+        }));
+        ev.preventDefault();
+    }
+    function mydrag(ev) {
+        console.log('I am dragging', ev.target.id);
+        clearDrag();
+        ev.dataTransfer.setData('text', ev.target.id);
+    }
 </script>
 
 <body>

@@ -16,26 +16,8 @@ main {
     grid-template-columns: repeat(auto-fill, minmax(20em, 1fr));
     gap: 0em;
     grid-auto-flow: row dense; */
-    columns: 1;
+    column-width: 15em;
     column-gap: 0.5em;
-}
-
-@media (min-width: 30em) {
-    main {
-        columns: 2;
-    }
-}
-
-@media (min-width: 45em) {
-    main {
-        columns: 3;
-    }
-}
-
-@media (min-width: 60em) {
-    main {
-        columns: 4;
-    }
 }
 
 h1 {
@@ -102,8 +84,21 @@ details {
     border-radius: 0.5em;
     padding: 0.5em;
     grid-row: span 30;
-    margin-bottom: 0.5em;
+    margin-bottom: 0;
     position: relative;
+}
+
+.droptarget {
+    height: 0.5em;
+    break-before: avoid-column;
+    transition: all 0.25s;
+    border-radius: 0.5em;
+}
+
+.targeted {
+    height: 1em;
+    margin: 1em;
+    background-color: #555;
 }
 
 details:nth-child(1) {
