@@ -171,10 +171,13 @@
                 table.appendChild(div.firstChild);
                 set_hooks();
             }
-        } else if (msg.kind == 'move') {
+        } else if (msg.kind == 'move' && msg.color != mycolor) {
             let elem = document.getElementById(msg.id);
             console.log('elem', elem, msg.id);
-            // let div = elem.nextElementSibling;
+            let div = elem.nextElementSibling;
+            let target = document.getElementById(msg.html);
+            target.parentElement.insertBefore(elem, target.nextElementSibling);
+            target.parentElement.insertBefore(div, target.nextElementSibling);
         } else {
             console.log('unexpected change:', msg);
         }
@@ -205,13 +208,13 @@
         let new_neighbor = ev.target.previousElementSibling.id;
 
         let to_move = document.getElementById(moved_id);
-        to_move.classList.remove('beingdragged');
         console.log('about to remove', to_move.nextElementSibling);
         to_move.parentElement.removeChild(to_move.nextElementSibling);
         let div = document.createElement('div');
         div.classList.add('droptarget');
         ev.target.parentElement.insertBefore(div, ev.target);
         ev.target.parentElement.insertBefore(to_move, ev.target);
+        to_move.classList.remove('beingdragged');
         console.log('sending message...', moved_id, new_neighbor);
         ws.send(JSON.stringify({
             'kind': 'move',

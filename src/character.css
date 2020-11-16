@@ -86,10 +86,12 @@ details {
     grid-row: span 30;
     margin-bottom: 0;
     position: relative;
+    transition: all 1s;
+    overflow: hidden;
 }
 
 .beingdragged {
-    background-color: red;
+    opacity: 0.2;
 }
 
 .droptarget {
