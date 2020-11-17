@@ -231,6 +231,10 @@
         ev.target.classList.add('beingdragged');
         ev.dataTransfer.setData('text', ev.target.id);
     }
+    function mydragend(ev) {
+        clearDrag();
+        ev.target.classList.remove('beingdragged');
+    }
 </script>
 
 <body>
