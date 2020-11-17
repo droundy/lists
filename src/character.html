@@ -105,6 +105,11 @@
             for (i = 0; i < elems.length; ++i) {
                 elems[i].setAttribute('contenteditable', true);
             }
+            elems = document.querySelectorAll('details');
+            for (i = 0; i < elems.length; ++i) {
+                elems[i].setAttribute('draggable', true);
+                elems[i].style.WebkitUserDrag = 'element';
+            }
             elems = document.querySelectorAll('button');
             for (i = 0; i < elems.length; ++i) {
                 elems[i].style.visibility = 'visible';
