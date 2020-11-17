@@ -1,5 +1,5 @@
 <details draggable="true" [% if self.title.contains('!') { %] open [% } %]id="[% self.table_id %]"
-        ondragstart="mydrag(event)" ondragend="mydragend(event)>
+        ondragstart="mydrag(event)" ondragend="mydragend(event)"">
     <summary>
         <span id="[% self.title_id %]" class="ce" contenteditable="true">[% if self.title.split_whitespace().next().is_some() { self.title as UTF8 } else { %] ??? [%} %]</span>
         <i class="material-icons">drag_indicator</i>
