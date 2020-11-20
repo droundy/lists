@@ -131,7 +131,7 @@ details:not([open]) {
 
 .table {
     display: grid;
-    grid-template-columns: [start] fit-content(15em) fit-content(15em) fit-content(15em) fit-content(15em) fit-content(15em) fit-content(15em);
+    grid-template-columns: [start] auto auto auto auto auto auto;
     grid-template-rows: masonry;
     gap: 0.25em;
 }
@@ -146,7 +146,7 @@ details:not([open]) {
 
 @media screen and (min-width: 40em) {
     .table {
-        grid-template-columns: repeat(2, [start] fit-content(15em) fit-content(15em) fit-content(15em) fit-content(15em) fit-content(15em) fit-content(15em));
+        grid-template-columns: repeat(2, [start] auto auto auto auto auto auto);
     }
     .row:nth-child(even) *:first-child {
         grid-column-start: start 2;
@@ -155,7 +155,7 @@ details:not([open]) {
 
 @media screen and (min-width: 60em) {
     .table {
-        grid-template-columns: repeat(3, [start] fit-content(15em) fit-content(15em) fit-content(15em) fit-content(15em) fit-content(15em) fit-content(15em));
+        grid-template-columns: repeat(3, [start] auto auto auto auto auto auto);
     }
     .row:nth-child(3n+1) *:first-child {
         grid-column-start: start 1;
@@ -170,7 +170,7 @@ details:not([open]) {
 
 @media screen and (min-width: 80em) {
     .table {
-        grid-template-columns: repeat(4, [start] fit-content(15em) fit-content(15em) fit-content(15em) fit-content(15em) fit-content(15em) fit-content(15em));
+        grid-template-columns: repeat(4, [start] auto auto auto auto auto auto);
     }
     .row:nth-child(4n+1) *:first-child {
         grid-column-start: start 1;
