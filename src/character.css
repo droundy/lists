@@ -157,6 +157,9 @@ details:not([open]) {
     .table {
         grid-template-columns: repeat(3, [start] fit-content(15em) fit-content(15em) fit-content(15em) fit-content(15em) fit-content(15em) fit-content(15em));
     }
+    .row:nth-child(3n+1) *:first-child {
+        grid-column-start: start 1;
+    }
     .row:nth-child(3n+2) *:first-child {
         grid-column-start: start 2;
     }
