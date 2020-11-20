@@ -113,7 +113,7 @@ details {
 }
 
 details div {
-    column-width: 20em;
+    column-width: 25em;
 }
 
 details:nth-child(1) {
@@ -131,15 +131,36 @@ details:not([open]) {
 
 .table {
     display: grid;
-    grid-template-columns: fit-content(15em) fit-content(15em) fit-content(15em) fit-content(15em) fit-content(15em) fit-content(15em);
+    grid-template-columns: [start] fit-content(15em) fit-content(15em) fit-content(15em) fit-content(15em) fit-content(15em) fit-content(15em);
     grid-template-rows: masonry;
     gap: 0.25em;
+}
+
+.row *:first-child {
+    grid-column-start: start;
 }
 
 .table .row {
     display: contents;
 }
 
-.row *:first-child {
-    grid-column: 1;
+@media screen and (min-width: 50em) {
+    .table {
+        grid-template-columns: repeat(2, [start] fit-content(15em) fit-content(15em) fit-content(15em) fit-content(15em) fit-content(15em) fit-content(15em));
+    }
+    .row:nth-child(even) *:first-child {
+        grid-column-start: start 2;
+    }
+}
+
+@media screen and (min-width: 75em) {
+    .table {
+        grid-template-columns: repeat(3, [start] fit-content(15em) fit-content(15em) fit-content(15em) fit-content(15em) fit-content(15em) fit-content(15em));
+    }
+    .row:nth-child(3n+2) *:first-child {
+        grid-column-start: start 2;
+    }
+    .row:nth-child(3n+3) *:first-child {
+        grid-column-start: start 3;
+    }
 }
