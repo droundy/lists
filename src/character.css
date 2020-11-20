@@ -100,7 +100,7 @@ details {
 
 .droptarget {
     height: 0.001em;
-    border: 0.5em solid black;
+    border: 0.25em solid black;
     break-before: avoid-column;
     transition: all 0.25s;
     border-radius: 10em;
