@@ -16,8 +16,8 @@ main {
     grid-template-columns: repeat(auto-fill, minmax(20em, 1fr));
     gap: 0em;
     grid-auto-flow: row dense; */
-    column-width: 15em;
-    column-gap: 0.5em;
+    /* column-width: 15em;
+    column-gap: 0.5em; */
 }
 
 h1 {
@@ -110,6 +110,10 @@ details {
     height: 1em;
     border: 1em solid black;
     background-color: #555;
+}
+
+details div {
+    column-width: 20em;
 }
 
 details:nth-child(1) {
