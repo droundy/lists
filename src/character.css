@@ -113,7 +113,7 @@ details {
 }
 
 details div {
-    column-width: 15em;
+    column-width: 20em;
 }
 
 details:nth-child(1) {
