@@ -148,7 +148,7 @@ details:not([open]) {
     white-space: nowrap;
 }
 
-@media screen and (min-width: 40em) {
+/* @media screen and (min-width: 40em) {
     .table {
         grid-template-columns: repeat(2, [start] min-content min-content min-content min-content min-content min-content min-content);
     }
@@ -188,4 +188,4 @@ details:not([open]) {
     .row:nth-child(4n+4) *:first-child {
         grid-column-start: start 4;
     }
-}
+} */

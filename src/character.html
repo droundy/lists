@@ -112,10 +112,10 @@
             }
             elems = document.querySelectorAll('button');
             for (i = 0; i < elems.length; ++i) {
-                elems[i].style.visibility = 'visible';
+                elems[i].style.display = 'inline-block';
             }
-            startedit.style.visibility = 'hidden';
-            stopedit.style.visibility = 'visible';
+            startedit.style.display = 'none';
+            stopedit.style.display = 'inline-block';
         };
         stopedit.onclick = function () {
             elems = document.querySelectorAll('.ce');
@@ -124,10 +124,10 @@
             }
             elems = document.querySelectorAll('button');
             for (i = 0; i < elems.length; ++i) {
-                elems[i].style.visibility = 'hidden';
+                elems[i].style.display = 'none';
             }
-            startedit.style.visibility = 'visible';
-            stopedit.style.visibility = 'hidden';
+            startedit.style.display = 'inline-block';
+            stopedit.style.display = 'none';
         };
     };
     ws.onopen = function () {
@@ -190,7 +190,7 @@
     ws.onclose = function () {
         console.log('disconnected');
         document.getElementById('stopedit').onclick();
-        document.getElementById('startedit').style.visibility = 'hidden';
+        document.getElementById('startedit').style.display = 'inline-block';
     };
     function clearDrag() {
         elems = document.querySelectorAll('.targeted');
