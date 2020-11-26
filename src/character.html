@@ -122,6 +122,11 @@
             for (i = 0; i < elems.length; ++i) {
                 elems[i].setAttribute('contenteditable', false);
             }
+            elems = document.querySelectorAll('details');
+            for (i = 0; i < elems.length; ++i) {
+                elems[i].setAttribute('draggable', false);
+                elems[i].style.WebkitUserDrag = '';
+            }
             elems = document.querySelectorAll('button');
             for (i = 0; i < elems.length; ++i) {
                 elems[i].style.display = 'none';
