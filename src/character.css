@@ -82,34 +82,38 @@ details[draggable] summary .material-icons {
     display: inline-block;
 }
 
+.col2 {
+    width: 49%;
+}
+#colleft {
+    float: left;
+}
+#colright {
+    float: right;
+}
+
 details {
     break-inside: avoid-column;
     background-color: #111;
     border-radius: 0.5em;
-    padding: 0.5em;
+    padding: 0.25em;
     grid-row: span 30;
-    margin-bottom: 0;
+    margin-bottom: 0.5em;
     position: relative;
     transition: all 1s;
     overflow: hidden;
+    border-top: 0 solid black;
+    box-sizing: border-box;
+    -moz-box-sizing: border-box;
+    -webkit-box-sizing: border-box;
 }
 
 .beingdragged {
     opacity: 0.4;
 }
 
-.droptarget {
-    height: 0.001em;
-    border: 0.25em solid black;
-    break-before: avoid-column;
-    transition: all 0.25s;
-    border-radius: 10em;
-}
-
 .targeted {
-    height: 1em;
-    border: 1em solid black;
-    background-color: #555;
+    border-top: 2em solid black;
 }
 
 details div {

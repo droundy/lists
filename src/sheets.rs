@@ -145,7 +145,7 @@ impl Character {
                 return Some(cnew);
             }
         }
-        if change.kind == "move" {
+        if change.kind == "move" || change.kind == "doublemove" {
             let origin_index = self
                 .sections
                 .iter()
@@ -163,13 +163,23 @@ impl Character {
             match (origin_index, final_index) {
                 (Some(o), Some(mut f)) => {
                     let v = self.sections.remove(o);
-                    if f < o {
-                        f += 1;
+                    if f >= o {
+                        f -= 1;
                     }
-                    self.sections.insert(f, v);
+                    if change.kind == "move" {
+                        self.sections.insert(f, v);
+                    } else {
+                        self.sections.insert(f, v);
+                        for i in (f+1..self.sections.len()-1).step_by(2) {
+                            self.sections.swap(i, i+1);
+                        }
+                    }
                 }
                 _ => {
-                    eprintln!("bad move change: {:?} from {:?}, to {:?}", change, origin_index, final_index);
+                    eprintln!(
+                        "bad move change: {:?} from {:?}, to {:?}",
+                        change, origin_index, final_index
+                    );
                 }
             }
         }

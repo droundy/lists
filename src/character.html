@@ -124,7 +124,7 @@
             }
             elems = document.querySelectorAll('details');
             for (i = 0; i < elems.length; ++i) {
-                elems[i].setAttribute('draggable', false);
+                elems[i].removeAttribute('draggable');
                 elems[i].style.WebkitUserDrag = '';
             }
             elems = document.querySelectorAll('button');
@@ -140,6 +140,24 @@
 
         set_hooks();
         document.getElementById('stopedit').onclick();
+        if (window.matchMedia('screen and (min-width: 50em)').matches) {
+            console.log('Wide viewport');
+            let elems = document.querySelectorAll('details');
+            let left = document.getElementById('colleft');
+            let right = document.getElementById('colright');
+            console.log(left, right);
+            for (i = 0; i < elems.length; ++i) {
+                if (i % 2 == 0) {
+                    console.log('left', i);
+                    left.appendChild(elems[i]);
+                } else {
+                    console.log('right', i, i & 1);
+                    right.appendChild(elems[i]);
+                }
+            }
+        } else {
+            console.log('Small viewport');
+        }
     };
     var timer = setTimeout(goWhite, 1000);
     ws.onmessage = function (event) {
@@ -181,13 +199,11 @@
                 table.appendChild(div.firstChild);
                 set_hooks();
             }
-        } else if (msg.kind == 'move' && msg.color != mycolor) {
+        } else if ((msg.kind == 'move' || msg.kind == 'doublemove') && msg.color != mycolor) {
             let elem = document.getElementById(msg.id);
             console.log('elem', elem, msg.id);
-            let div = elem.nextElementSibling;
             let target = document.getElementById(msg.html);
-            target.parentElement.insertBefore(elem, target.nextElementSibling);
-            target.parentElement.insertBefore(div, target.nextElementSibling);
+            target.parentElement.insertBefore(elem, target);
         } else {
             console.log('unexpected change:', msg);
         }
@@ -215,23 +231,30 @@
     function mydrop(ev) {
         clearDrag();
         let moved_id = ev.dataTransfer.getData('text');
-        let new_neighbor = ev.target.previousElementSibling.id;
-
         let to_move = document.getElementById(moved_id);
-        console.log('about to remove', to_move.nextElementSibling);
-        to_move.parentElement.removeChild(to_move.nextElementSibling);
-        let div = document.createElement('div');
-        div.classList.add('droptarget');
-        ev.target.parentElement.insertBefore(div, ev.target);
         ev.target.parentElement.insertBefore(to_move, ev.target);
         to_move.classList.remove('beingdragged');
-        console.log('sending message...', moved_id, new_neighbor);
-        ws.send(JSON.stringify({
-            'kind': 'move',
-            'id': moved_id,
-            'html': new_neighbor,
-            'color': mycolor,
-        }));
+        if (ev.target.parentElement.id == 'colleft' || ev.target.parentElement.id == 'colright') {
+            let new_neighbor = ev.target.id;
+
+            console.log('sending message...', moved_id, new_neighbor);
+            ws.send(JSON.stringify({
+                'kind': 'doublemove',
+                'id': moved_id,
+                'html': new_neighbor,
+                'color': mycolor,
+            }));
+        } else {
+            let new_neighbor = ev.target.id;
+
+            console.log('sending message...', moved_id, new_neighbor);
+            ws.send(JSON.stringify({
+                'kind': 'move',
+                'id': moved_id,
+                'html': new_neighbor,
+                'color': mycolor,
+            }));
+        }
         console.log('sent message');
         ev.preventDefault();
     }
@@ -259,6 +282,8 @@
         s
         }
         %]
+        <div id="colleft" class="col2"></div>
+        <div id="colright" class="col2"></div>
         <button id="new-section"><i class="material-icons">add_circle</i></button>
     </main>
 </body>
