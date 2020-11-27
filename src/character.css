@@ -92,6 +92,12 @@ details[draggable] summary .material-icons {
     float: right;
 }
 
+.col3 {
+    width: 33%;
+    float: left;
+    margin-right: 0.25em;
+}
+
 details {
     break-inside: avoid-column;
     background-color: #111;

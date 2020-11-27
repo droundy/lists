@@ -140,7 +140,14 @@
 
         set_hooks();
         document.getElementById('stopedit').onclick();
-        if (window.matchMedia('screen and (min-width: 50em)').matches) {
+        if (window.matchMedia('screen and (min-width: 75em)').matches) {
+            console.log('Wider viewport');
+            let elems = document.querySelectorAll('details');
+            let columns = [document.getElementById('col13'), document.getElementById('col23'), document.getElementById('col33')];
+            for (i = 0; i < elems.length; ++i) {
+                columns[i % columns.length].appendChild(elems[i]);
+            }
+        } else if (window.matchMedia('screen and (min-width: 50em)').matches) {
             console.log('Wide viewport');
             let elems = document.querySelectorAll('details');
             let left = document.getElementById('colleft');
@@ -234,20 +241,22 @@
         let to_move = document.getElementById(moved_id);
         ev.target.parentElement.insertBefore(to_move, ev.target);
         to_move.classList.remove('beingdragged');
+        let new_neighbor = ev.target.id;
         if (ev.target.parentElement.id == 'colleft' || ev.target.parentElement.id == 'colright') {
-            let new_neighbor = ev.target.id;
-
-            console.log('sending message...', moved_id, new_neighbor);
             ws.send(JSON.stringify({
                 'kind': 'doublemove',
                 'id': moved_id,
                 'html': new_neighbor,
                 'color': mycolor,
             }));
+        } else if (['col13', 'col23', 'col33'].indexOf(ev.target.parentElement.id) >= 0) {
+            ws.send(JSON.stringify({
+                'kind': 'triplemove',
+                'id': moved_id,
+                'html': new_neighbor,
+                'color': mycolor,
+            }));
         } else {
-            let new_neighbor = ev.target.id;
-
-            console.log('sending message...', moved_id, new_neighbor);
             ws.send(JSON.stringify({
                 'kind': 'move',
                 'id': moved_id,
@@ -284,6 +293,9 @@
         %]
         <div id="colleft" class="col2"></div>
         <div id="colright" class="col2"></div>
+        <div id="col13" class="col3"></div>
+        <div id="col23" class="col3"></div>
+        <div id="col33" class="col3"></div>
         <button id="new-section"><i class="material-icons">add_circle</i></button>
     </main>
 </body>

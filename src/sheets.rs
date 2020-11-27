@@ -145,7 +145,7 @@ impl Character {
                 return Some(cnew);
             }
         }
-        if change.kind == "move" || change.kind == "doublemove" {
+        if ["move", "doublemove", "triplemove"].contains(&change.kind.as_str()) {
             let origin_index = self
                 .sections
                 .iter()
@@ -166,13 +166,22 @@ impl Character {
                     if f >= o {
                         f -= 1;
                     }
-                    if change.kind == "move" {
-                        self.sections.insert(f, v);
-                    } else {
-                        self.sections.insert(f, v);
-                        for i in (f+1..self.sections.len()-1).step_by(2) {
-                            self.sections.swap(i, i+1);
+                    match change.kind.as_str() {
+                        "move" => self.sections.insert(f, v),
+                        "doublemove" => {
+                            self.sections.insert(f, v);
+                            for i in (f + 1..self.sections.len() - 1).step_by(2) {
+                                self.sections.swap(i, i + 1);
+                            }
                         }
+                        "triplemove" => {
+                            self.sections.insert(f, v);
+                            for i in (f + 1..self.sections.len() - 2).step_by(3) {
+                                self.sections.swap(i+1, i + 2);
+                                self.sections.swap(i, i + 1);
+                            }
+                        }
+                        _ => unreachable!(),
                     }
                 }
                 _ => {
