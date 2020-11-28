@@ -146,49 +146,51 @@ impl Character {
             }
         }
         if ["move", "doublemove", "triplemove"].contains(&change.kind.as_str()) {
-            let origin_index = self
-                .sections
-                .iter()
-                .enumerate()
-                .filter(|s| s.1.table_id == change.id)
-                .map(|t| t.0)
-                .next();
-            let final_index = self
-                .sections
-                .iter()
-                .enumerate()
-                .filter(|s| s.1.table_id == change.html)
-                .map(|t| t.0)
-                .next();
-            match (origin_index, final_index) {
-                (Some(o), Some(mut f)) => {
-                    let v = self.sections.remove(o);
-                    if f >= o {
-                        f -= 1;
-                    }
-                    match change.kind.as_str() {
-                        "move" => self.sections.insert(f, v),
-                        "doublemove" => {
-                            self.sections.insert(f, v);
-                            for i in (f + 1..self.sections.len() - 1).step_by(2) {
-                                self.sections.swap(i, i + 1);
-                            }
-                        }
-                        "triplemove" => {
-                            self.sections.insert(f, v);
-                            for i in (f + 1..self.sections.len() - 2).step_by(3) {
-                                self.sections.swap(i+1, i + 2);
-                                self.sections.swap(i, i + 1);
-                            }
-                        }
-                        _ => unreachable!(),
+            let mut columns: Vec<Vec<Section>> = vec![Vec::new()];
+            match change.kind.as_str() {
+                "doublemove" => {
+                    columns = vec![Vec::new(), Vec::new()];
+                }
+                "triplemove" => {
+                    columns = vec![Vec::new(), Vec::new(), Vec::new()];
+                }
+                _ => (),
+            }
+            let nc = columns.len();
+            for (i, s) in self.sections.drain(..).enumerate() {
+                columns[i % nc].push(s);
+            }
+            let mut v = None;
+            for i in 0..nc {
+                let origin_index = columns[i]
+                    .iter()
+                    .enumerate()
+                    .filter(|s| s.1.table_id == change.id)
+                    .map(|t| t.0)
+                    .next();
+                if let Some(o) = origin_index {
+                    v = Some(columns[i].remove(o));
+                }
+            }
+            if let Some(v) = v {
+                for i in 0..nc {
+                    let final_index = columns[i]
+                        .iter()
+                        .enumerate()
+                        .filter(|s| s.1.table_id == change.html)
+                        .map(|t| t.0)
+                        .next();
+                    if let Some(f) = final_index {
+                        columns[i].insert(f, v);
+                        break;
                     }
                 }
-                _ => {
-                    eprintln!(
-                        "bad move change: {:?} from {:?}, to {:?}",
-                        change, origin_index, final_index
-                    );
+            }
+            while columns.iter().any(|c| c.len() > 0) {
+                for i in 0..nc {
+                    if columns[i].len() > 0 {
+                        self.sections.push(columns[i].remove(0));
+                    }
                 }
             }
         }
