@@ -146,50 +146,52 @@ impl Character {
             }
         }
         if ["move", "doublemove", "triplemove"].contains(&change.kind.as_str()) {
-            let mut columns: Vec<Vec<Section>> = vec![Vec::new()];
-            match change.kind.as_str() {
-                "doublemove" => {
-                    columns = vec![Vec::new(), Vec::new()];
+            if self.sections.iter().any(|s| s.table_id == change.html) {
+                let mut columns: Vec<Vec<Section>> = vec![Vec::new()];
+                match change.kind.as_str() {
+                    "doublemove" => {
+                        columns = vec![Vec::new(), Vec::new()];
+                    }
+                    "triplemove" => {
+                        columns = vec![Vec::new(), Vec::new(), Vec::new()];
+                    }
+                    _ => (),
                 }
-                "triplemove" => {
-                    columns = vec![Vec::new(), Vec::new(), Vec::new()];
+                let nc = columns.len();
+                for (i, s) in self.sections.drain(..).enumerate() {
+                    columns[i % nc].push(s);
                 }
-                _ => (),
-            }
-            let nc = columns.len();
-            for (i, s) in self.sections.drain(..).enumerate() {
-                columns[i % nc].push(s);
-            }
-            let mut v = None;
-            for i in 0..nc {
-                let origin_index = columns[i]
-                    .iter()
-                    .enumerate()
-                    .filter(|s| s.1.table_id == change.id)
-                    .map(|t| t.0)
-                    .next();
-                if let Some(o) = origin_index {
-                    v = Some(columns[i].remove(o));
-                }
-            }
-            if let Some(v) = v {
+                let mut v = None;
                 for i in 0..nc {
-                    let final_index = columns[i]
+                    let origin_index = columns[i]
                         .iter()
                         .enumerate()
-                        .filter(|s| s.1.table_id == change.html)
+                        .filter(|s| s.1.table_id == change.id)
                         .map(|t| t.0)
                         .next();
-                    if let Some(f) = final_index {
-                        columns[i].insert(f, v);
-                        break;
+                    if let Some(o) = origin_index {
+                        v = Some(columns[i].remove(o));
                     }
                 }
-            }
-            while columns.iter().any(|c| c.len() > 0) {
-                for i in 0..nc {
-                    if columns[i].len() > 0 {
-                        self.sections.push(columns[i].remove(0));
+                if let Some(v) = v {
+                    for i in 0..nc {
+                        let final_index = columns[i]
+                            .iter()
+                            .enumerate()
+                            .filter(|s| s.1.table_id == change.html)
+                            .map(|t| t.0)
+                            .next();
+                        if let Some(f) = final_index {
+                            columns[i].insert(f, v);
+                            break;
+                        }
+                    }
+                }
+                while columns.iter().any(|c| c.len() > 0) {
+                    for i in 0..nc {
+                        if columns[i].len() > 0 {
+                            self.sections.push(columns[i].remove(0));
+                        }
                     }
                 }
             }
