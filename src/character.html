@@ -104,6 +104,9 @@
             elems = document.querySelectorAll('.ce');
             for (i = 0; i < elems.length; ++i) {
                 elems[i].setAttribute('contenteditable', true);
+                if (elems[i].innerHTML == '') {
+                    elems[i].innerHTML = '???';
+                }
             }
             elems = document.querySelectorAll('details');
             for (i = 0; i < elems.length; ++i) {
