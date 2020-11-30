@@ -257,17 +257,6 @@ pub fn sheets() -> impl Filter<Extract = impl warp::Reply, Error = warp::Rejecti
                 .body(STYLE)
                 .unwrap())
         });
-    let drag_and_drop = path!("sheets" / "DragDropTouch.js")
-        .or(path!("sheets" / String / "DragDropTouch.js"))
-        .map(|_| {
-            const JS: &'static str = include_str!("DragDropTouch.js");
-            Ok(warp::http::Response::builder()
-                .status(200)
-                .header("content-length", JS.len())
-                .header("content-type", "text/javascript")
-                .body(JS)
-                .unwrap())
-        });
     let index = path!("sheets").map(|| {
         println!("I am doing index.");
         display(HTML, &Index).into_response()
@@ -306,7 +295,7 @@ pub fn sheets() -> impl Filter<Extract = impl warp::Reply, Error = warp::Rejecti
                 ws.on_upgrade(move |socket| editor_connected(code, character, socket, editors))
             },
         );
-    sock.or(css).or(drag_and_drop).or(character).or(index)
+    sock.or(css).or(character).or(index)
 }
 
 async fn editor_connected(
