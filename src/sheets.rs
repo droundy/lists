@@ -51,7 +51,7 @@ impl Section {
                 kind: "new-row".to_string(),
                 id: self.table_id.clone(),
                 color: change.color.clone(),
-                html: display_as::format_as!(HTML, r),
+                html: display_as::format_as!(HTML, r).into_string(),
             });
         }
         for r in self.table.iter_mut() {
@@ -61,7 +61,7 @@ impl Section {
                     return Some(Change {
                         kind: "replace".to_string(),
                         id: self.table_id.clone(),
-                        html: display_as::format_as!(HTML, self),
+                        html: display_as::format_as!(HTML, self).into_string(),
                         color: change.color.clone(),
                     });
                 }
@@ -89,7 +89,7 @@ impl Row {
             return Some(Change {
                 kind: "replace".to_string(),
                 id: self.id.clone(),
-                html: display_as::format_as!(HTML, self),
+                html: display_as::format_as!(HTML, self).into_string(),
                 color: change.color.clone(),
             });
         }
@@ -98,7 +98,7 @@ impl Row {
             return Some(Change {
                 kind: "replace".to_string(),
                 id: self.id.clone(),
-                html: display_as::format_as!(HTML, self),
+                html: display_as::format_as!(HTML, self).into_string(),
                 color: change.color.clone(),
             });
         }
@@ -209,7 +209,7 @@ impl Character {
             return Some(Change {
                 kind: "new-section".to_string(),
                 id: "main".to_string(),
-                html: display_as::format_as!(HTML, s),
+                html: display_as::format_as!(HTML, s).into_string(),
                 color: change.color.clone(),
             });
         }
@@ -226,7 +226,7 @@ impl Character {
             return Some(Change {
                 kind: "new-section".to_string(),
                 id: "sections".to_string(),
-                html: display_as::format_as!(HTML, s),
+                html: display_as::format_as!(HTML, s).into_string(),
                 color: change.color.clone(),
             });
         }
