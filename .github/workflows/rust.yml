@@ -1,10 +1,11 @@
-name: Rust
+name: Test
 
 on:
   push:
     branches: [ "master" ]
   pull_request:
     branches: [ "master" ]
+  workflow_call:
 
 env:
   CARGO_TERM_COLOR: always
@@ -19,36 +20,3 @@ jobs:
       run: cargo build
     - name: Run tests
       run: cargo test
-
-  build:
-    needs: test
-    runs-on: ubuntu-latest
-
-    steps:
-    - uses: actions/checkout@v3
-    - name: Install musl rust
-      run: rustup target x86_64-unknown-linux-musl
-    - name: Build release
-      run: cargo build --release --target x86_64-unknown-linux-musl
-    - name: Show hash
-      run: sha1sum target/x86_64-unknown-linux-musl/release/things-list
-    - name: Show executable size
-      run: ls -lh target/x86_64-unknown-linux-musl/release/things-list
-    - name: Store release binary
-      uses: actions/upload-artifact@v3
-      with:
-        name: binary
-        path: target/x86_64-unknown-linux-musl/release/things-list
-
-  deploy:
-    needs: build
-    runs-on: ubuntu-latest
-
-    steps:
-    - name: Grab the binary
-      uses: actions/download-artifact@v3
-      with:
-        name: binary
-    - name: Show hash
-      run: sha1sum binary
-
