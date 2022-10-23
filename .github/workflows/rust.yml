@@ -10,8 +10,7 @@ env:
   CARGO_TERM_COLOR: always
 
 jobs:
-  build:
-
+  test:
     runs-on: ubuntu-latest
 
     steps:
@@ -20,6 +19,15 @@ jobs:
       run: cargo build
     - name: Run tests
       run: cargo test
+
+  build:
+    needs: test
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v3
+    - name: Install musl rust
+      run: rustup target x86_64-unknown-linux-musl
     - name: Build release
       run: cargo build --release --target x86_64-unknown-linux-musl
     - name: Show hash
