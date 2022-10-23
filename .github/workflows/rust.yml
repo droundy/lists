@@ -20,3 +20,25 @@ jobs:
       run: cargo build --verbose
     - name: Run tests
       run: cargo test --verbose
+    - name: Build release
+      run: cargo build --release --target x86_64-unknown-linux-musl
+    - name: Show hash
+      run: sha1sum target/x86_64-unknown-linux-musl/release/things-list
+    - name: Store release binary
+      uses: actions/upload-artifact@v3
+      with:
+        name: binary
+        path: target/x86_64-unknown-linux-musl/release/things-list
+
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Grab the binary
+      uses: actions/download-artifact@v3
+      with:
+        name: binary
+    - name: Show hash
+      run: sha1sum binary
+
+    
