@@ -24,14 +24,14 @@ jobs:
     - name: Build release
       run: cargo build --release --target x86_64-unknown-linux-musl
     - name: Show hash
-      run: sha1sum target/x86_64-unknown-linux-musl/release/things-list
+      run: sha1sum target/x86_64-unknown-linux-musl/release/thing-lists
     - name: Show executable size
-      run: ls -lh target/x86_64-unknown-linux-musl/release/things-list
+      run: ls -lh target/x86_64-unknown-linux-musl/release/thing-lists
     - name: Store release binary
       uses: actions/upload-artifact@v3
       with:
         name: binary
-        path: target/x86_64-unknown-linux-musl/release/things-list
+        path: target/x86_64-unknown-linux-musl/release/thing-lists
 
   deploy:
     needs: build
