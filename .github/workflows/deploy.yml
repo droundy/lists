@@ -43,7 +43,7 @@ jobs:
       with:
         name: binary
     - name: Show hash
-      run: sha1sum binary
+      run: sha1sum target/x86_64-unknown-linux-musl/release/thing-lists
 
     - name: Setup SSH Keys and known_hosts
       env:
