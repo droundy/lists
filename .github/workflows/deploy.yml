@@ -34,5 +34,5 @@ jobs:
       run: |
           ssh-agent -a $SSH_AUTH_SOCK > /dev/null
           ssh-add - <<< "${{ secrets.SSH_PRIVATE_KEY }}"
-          ssh -v -o StrictHostKeyChecking=no -l ${{ secrets.USERNAME}} lists.for-our.info date
+          ssh -v -o StrictHostKeyChecking=no -l droundy lists.for-our.info date
 
