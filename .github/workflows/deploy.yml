@@ -35,13 +35,8 @@ jobs:
           ssh-agent -a $SSH_AUTH_SOCK > /dev/null
           ssh-add - <<< "${{ secrets.SSH_PRIVATE_KEY }}"
 
-    - name: Set known hosts
-      env:
-          SSH_AUTH_SOCK: /tmp/ssh_agent.sock
-      run: cat > ~/.ssh/known_hosts <<< "${{ secrets.KNOWN_HOSTS }}"
-
     - name: Test that we can ssh
       env:
           SSH_AUTH_SOCK: /tmp/ssh_agent.sock
-      run: ssh lists.for-our.info date
+      run: ssh -o StrictHostKeyChecking=no lists.for-our.info date
 
