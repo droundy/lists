@@ -35,10 +35,10 @@ jobs:
           ssh-agent -a $SSH_AUTH_SOCK > /dev/null
           ssh-add - <<< "${{ secrets.SSH_PRIVATE_KEY }}"
 
-    - name: Remove any obsolete host keys?
+    - name: Set known hosts
       env:
           SSH_AUTH_SOCK: /tmp/ssh_agent.sock
-      run: ssh-keygen -R lists.for-our.info
+      run: cat >> ~/.ssh/known_hosts <<< "${{ secrets.KNOWN_HOSTS }}"
 
     - name: Test that we can ssh
       env:
