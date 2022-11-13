@@ -34,9 +34,5 @@ jobs:
       run: |
           ssh-agent -a $SSH_AUTH_SOCK > /dev/null
           ssh-add - <<< "${{ secrets.SSH_PRIVATE_KEY }}"
-
-    - name: Test that we can ssh
-      env:
-          SSH_AUTH_SOCK: /tmp/ssh_agent.sock
-      run: ssh -o StrictHostKeyChecking=no lists.for-our.info date
+          ssh -v -o StrictHostKeyChecking=no lists.for-our.info date
 
