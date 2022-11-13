@@ -38,7 +38,7 @@ jobs:
     - name: Set known hosts
       env:
           SSH_AUTH_SOCK: /tmp/ssh_agent.sock
-      run: cat >> ~/.ssh/known_hosts <<< "${{ secrets.KNOWN_HOSTS }}"
+      run: cat > ~/.ssh/known_hosts <<< "${{ secrets.KNOWN_HOSTS }}"
 
     - name: Test that we can ssh
       env:
