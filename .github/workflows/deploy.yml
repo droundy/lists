@@ -38,7 +38,7 @@ jobs:
       env:
           SSH_AUTH_SOCK: /tmp/ssh_agent.sock
       run: |
-          scp -o StrictHostKeyChecking=no -l droundy target/x86_64-unknown-linux-musl/release/thing-lists lists.for-our.info:thing-lists.new
+          scp -o StrictHostKeyChecking=no target/x86_64-unknown-linux-musl/release/thing-lists droundy@lists.for-our.info:thing-lists.new
     - name: Rename executable
       env:
           SSH_AUTH_SOCK: /tmp/ssh_agent.sock
