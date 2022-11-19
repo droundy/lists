@@ -34,5 +34,6 @@ jobs:
       run: |
           ssh-agent -a $SSH_AUTH_SOCK > /dev/null
           ssh-add - <<< "${{ secrets.SSH_PRIVATE_KEY }}"
-          ssh -v -o StrictHostKeyChecking=no -l droundy lists.for-our.info date
+          scp -o StrictHostKeyChecking=no -l droundy target/x86_64-unknown-linux-musl/release/thing-lists lists.for-our.info:thing-lists.new
+          ssh -v -o StrictHostKeyChecking=no -l droundy lists.for-our.info mv thing-lists.new thing-lists
 
