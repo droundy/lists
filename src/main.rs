@@ -5,7 +5,7 @@ use serde::{Deserialize, Serialize};
 use clapme::ClapMe;
 
 mod atomicfile;
-mod sheets;
+// mod sheets;
 
 #[derive(Debug, ClapMe, Serialize)]
 struct TlsFlags {
@@ -140,11 +140,11 @@ async fn main() {
             display(HTML, &x).into_response()
         });
 
-    let sheets_filter = sheets::sheets();
+    // let sheets_filter = sheets::sheets();
 
     if let Some(tls) = flags._tls {
         lets_encrypt_warp::lets_encrypt(style_css
-                                        .or(sheets_filter)
+                                        // .or(sheets_filter)
                                         .or(backup)
                                         .or(edit)
                                         .or(new)
@@ -156,11 +156,11 @@ async fn main() {
                                         .or(list_of_lists)
                                         .or(index),
                                         &tls.email,
-                                        &tls.domain)
+                                        &tls.domain).await
             .expect("Error connecting with TLS");
     } else {
         warp::serve(style_css
-                    .or(sheets_filter)
+                    // .or(sheets_filter)
                     .or(backup)
                     .or(edit)
                     .or(new)

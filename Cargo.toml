@@ -12,17 +12,17 @@ serde = { version = "1.0", features = ["derive"] }
 serde_yaml = "0.8"
 serde_json = "1.0"
 tempfile = "3.0.3"
-warp = "0.2.5"
-tokio = { version = "0.2", features = ["full"] }
+warp = "0.3.3"
+tokio = { version = "1.22.0", features = ["full"] }
 futures = "0.3.8"
 
-display-as = { version = "0.6.2", features = ["usewarp"] }
+display-as = { version = "0.7.0", path = "../display-as/display-as", features = ["warp"] }
 simple-error = "0.2.2"
 rand = "0.7.0"
 bytes = "0.5.6"
 clapme = "0.1.13"
 memorable-wordlist = "0.1.5"
-lets-encrypt-warp = "0.2.1"
+lets-encrypt-warp = { version = "0.3.0", path = "../lets-encrypt-warp" }
 tar = "0.4.26"
 chrono = "0.4"
 
