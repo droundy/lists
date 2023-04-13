@@ -339,6 +339,16 @@ impl ThingList {
             if let Ok(mut s) = serde_yaml::from_reader::<_,Vec<Thing>>(&f) {
                 // Anything that has an empty name should just be deleted...
                 s.retain(|x| x.name.len() > 0);
+                // Do not retain any duplicate entries, since that can cause trouble and confusion!
+                let mut to_delete = Vec::new();
+                for (i, thing) in s.iter().enumerate() {
+                    if s[i + 1..].contains(thing) {
+                        to_delete.push(i);
+                    }
+                }
+                for i in to_delete.into_iter().rev() {
+                    s.remove(i);
+                }
                 return ThingList {
                     code: code.to_string(),
                     name: name.to_string(),
