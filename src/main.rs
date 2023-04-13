@@ -1,8 +1,8 @@
-use warp::{Filter, path};
-use warp::reply::Reply;
-use display_as::{with_template, display, HTML, URL, UTF8, DisplayAs};
-use serde::{Deserialize, Serialize};
 use clapme::ClapMe;
+use display_as::{display, with_template, DisplayAs, HTML, URL, UTF8};
+use serde::{Deserialize, Serialize};
+use warp::reply::Reply;
+use warp::{path, Filter};
 
 mod atomicfile;
 // mod sheets;
@@ -24,7 +24,10 @@ struct Flags {
 }
 
 fn percent_decode(x: &str) -> String {
-    percent_encoding::percent_decode(x.as_bytes()).decode_utf8().unwrap().to_string()
+    percent_encoding::percent_decode(x.as_bytes())
+        .decode_utf8()
+        .unwrap()
+        .to_string()
 }
 
 #[tokio::main]
@@ -33,11 +36,11 @@ async fn main() {
     let style_css = path!("style.css").map(|| {
         const STYLE: &'static str = include_str!("../style.css");
         Ok(warp::http::Response::builder()
-           .status(200)
-           .header("content-length", STYLE.len())
-           .header("content-type", "text/css")
-           .body(STYLE)
-           .unwrap())
+            .status(200)
+            .header("content-length", STYLE.len())
+            .header("content-type", "text/css")
+            .body(STYLE)
+            .unwrap())
     });
     let edit = path!("edit-thing")
         .and(warp::filters::body::form())
@@ -53,26 +56,25 @@ async fn main() {
             change.save();
             "okay"
         });
-    let backup = path!("backup" / String)
-        .map(|code: String| {
-            let mut output = Vec::new();
-            {
-                let mut ar = tar::Builder::new(&mut output);
-                // Use the directory at one location, but insert it into the archive
-                // with a different name.
-                ar.append_dir_all("data", format!("data/{}", code)).unwrap();
-                ar.finish().unwrap();
-            }
-            Ok(warp::http::Response::builder()
-               .status(200)
-               .header("content-length", output.len())
-               .header("content-type", "application/tar")
-               .header("content-disposition", r#"attachment; filename="data.tar""#)
-               .body(output)
-               .unwrap())
-        });
-    let choose = path!("choose" / String / String / String)
-        .map(|code: String, list: String, name: String| {
+    let backup = path!("backup" / String).map(|code: String| {
+        let mut output = Vec::new();
+        {
+            let mut ar = tar::Builder::new(&mut output);
+            // Use the directory at one location, but insert it into the archive
+            // with a different name.
+            ar.append_dir_all("data", format!("data/{}", code)).unwrap();
+            ar.finish().unwrap();
+        }
+        Ok(warp::http::Response::builder()
+            .status(200)
+            .header("content-length", output.len())
+            .header("content-type", "application/tar")
+            .header("content-disposition", r#"attachment; filename="data.tar""#)
+            .body(output)
+            .unwrap())
+    });
+    let choose = path!("choose" / String / String / String).map(
+        |code: String, list: String, name: String| {
             let change = ChooseThing {
                 code: percent_decode(&code),
                 name: percent_decode(&name),
@@ -80,9 +82,10 @@ async fn main() {
             };
             println!("choosing thing {:?}", change);
             display(HTML, &change.choose()).into_response()
-        });
-    let delay = path!("pass" / String / String / String)
-        .map(|code: String, list: String, name: String| {
+        },
+    );
+    let delay =
+        path!("pass" / String / String / String).map(|code: String, list: String, name: String| {
             let change = ChooseThing {
                 code: percent_decode(&code),
                 name: percent_decode(&name),
@@ -91,87 +94,98 @@ async fn main() {
             println!("delay thing {:?}", change);
             display(HTML, &change.delay()).into_response()
         });
-    let index = (warp::path::end().or(path!("index.html")))
-        .map(|_| {
-            println!("I am doing index.");
-            display(HTML, &Index {}).into_response()
-        });
-    let search = path!("search" / String / String / String)
-        .map(|code: String, listname: String, pattern: String| {
+    let index = (warp::path::end().or(path!("index.html"))).map(|_| {
+        println!("I am doing index.");
+        display(HTML, &Index {}).into_response()
+    });
+    let search = path!("search" / String / String / String).map(
+        |code: String, listname: String, pattern: String| {
             let listname = percent_encoding::percent_decode(listname.as_bytes())
-                .decode_utf8().unwrap();
+                .decode_utf8()
+                .unwrap();
             let code = percent_encoding::percent_decode(code.as_bytes())
-                .decode_utf8().unwrap();
+                .decode_utf8()
+                .unwrap();
             let pattern = if pattern != "qqq" {
                 percent_encoding::percent_decode(pattern.as_bytes())
-                    .decode_utf8().unwrap()
+                    .decode_utf8()
+                    .unwrap()
             } else {
                 "".into()
             };
             let x = ThingsOnly(ThingList::read(&code, &listname).filter(&pattern));
             display(HTML, &x).into_response()
-        });
-    let sort = path!("sort" / String / String)
-        .map(|code: String, listname: String| {
-            println!("I am sorting the list.");
-            let listname = percent_encoding::percent_decode(listname.as_bytes())
-                .decode_utf8().unwrap();
-            let code = percent_encoding::percent_decode(code.as_bytes())
-                .decode_utf8().unwrap();
-            let x = ThingsOnly(ThingList::read(&code, &listname).sorted());
-            println!("I am done sorting the list.");
-            display(HTML, &x).into_response()
-        });
-    let list = path!(String / String)
-        .map(|code: String, listname: String| {
-            let listname = percent_encoding::percent_decode(listname.as_bytes())
-                .decode_utf8().unwrap();
-            let code = percent_encoding::percent_decode(code.as_bytes())
-                .decode_utf8().unwrap();
-            let x = ThingList::read(&code, &listname);
-            display(HTML, &x).into_response()
-        });
-    let list_of_lists = path!(String)
-        .map(|code: String| {
-            println!("list of lists: {}", code);
-            let code = percent_encoding::percent_decode(code.as_bytes())
-                .decode_utf8().unwrap();
-            let x = ThingList::read(&code, "fixme");
-            display(HTML, &x).into_response()
-        });
+        },
+    );
+    let sort = path!("sort" / String / String).map(|code: String, listname: String| {
+        println!("I am sorting the list.");
+        let listname = percent_encoding::percent_decode(listname.as_bytes())
+            .decode_utf8()
+            .unwrap();
+        let code = percent_encoding::percent_decode(code.as_bytes())
+            .decode_utf8()
+            .unwrap();
+        let x = ThingsOnly(ThingList::read(&code, &listname).sorted());
+        println!("I am done sorting the list.");
+        display(HTML, &x).into_response()
+    });
+    let list = path!(String / String).map(|code: String, listname: String| {
+        let listname = percent_encoding::percent_decode(listname.as_bytes())
+            .decode_utf8()
+            .unwrap();
+        let code = percent_encoding::percent_decode(code.as_bytes())
+            .decode_utf8()
+            .unwrap();
+        let x = ThingList::read(&code, &listname);
+        display(HTML, &x).into_response()
+    });
+    let list_of_lists = path!(String).map(|code: String| {
+        println!("list of lists: {}", code);
+        let code = percent_encoding::percent_decode(code.as_bytes())
+            .decode_utf8()
+            .unwrap();
+        let x = ThingList::read(&code, "fixme");
+        display(HTML, &x).into_response()
+    });
 
     // let sheets_filter = sheets::sheets();
 
     if let Some(tls) = flags._tls {
-        lets_encrypt_warp::lets_encrypt(style_css
-                                        // .or(sheets_filter)
-                                        .or(backup)
-                                        .or(edit)
-                                        .or(new)
-                                        .or(choose)
-                                        .or(delay)
-                                        .or(sort)
-                                        .or(search)
-                                        .or(list)
-                                        .or(list_of_lists)
-                                        .or(index),
-                                        &tls.email,
-                                        &tls.domain).await
-            .expect("Error connecting with TLS");
+        lets_encrypt_warp::lets_encrypt(
+            style_css
+                // .or(sheets_filter)
+                .or(backup)
+                .or(edit)
+                .or(new)
+                .or(choose)
+                .or(delay)
+                .or(sort)
+                .or(search)
+                .or(list)
+                .or(list_of_lists)
+                .or(index),
+            &tls.email,
+            &tls.domain,
+        )
+        .await
+        .expect("Error connecting with TLS");
     } else {
-        warp::serve(style_css
-                    // .or(sheets_filter)
-                    .or(backup)
-                    .or(edit)
-                    .or(new)
-                    .or(choose)
-                    .or(delay)
-                    .or(sort)
-                    .or(search)
-                    .or(list)
-                    .or(list_of_lists)
-                    .or(index))
-            .run(([0, 0, 0, 0], flags.port.unwrap_or(80))).await;
+        warp::serve(
+            style_css
+                // .or(sheets_filter)
+                .or(backup)
+                .or(edit)
+                .or(new)
+                .or(choose)
+                .or(delay)
+                .or(sort)
+                .or(search)
+                .or(list)
+                .or(list_of_lists)
+                .or(index),
+        )
+        .run(([0, 0, 0, 0], flags.port.unwrap_or(80)))
+        .await;
     }
 }
 
@@ -267,7 +281,8 @@ impl DisplayAs<HTML> for Thing {}
 
 impl Thing {
     fn slug(&self) -> String {
-        self.name.replace("'", "-")
+        self.name
+            .replace("'", "-")
             .replace(" ", "-")
             .replace("\"", "-")
             .replace("\\", "-")
@@ -284,12 +299,13 @@ impl Thing {
     }
     fn delay_time(&self, list: &ThingList) -> f64 {
         if self.count > 1 {
-            geometric_mean(&[list.now() - self.chosen,
-                             self.mean_interval(),
-                             list.mean_interval()])
+            geometric_mean(&[
+                list.now() - self.chosen,
+                self.mean_interval(),
+                list.mean_interval(),
+            ])
         } else if self.count == 1 {
-            geometric_mean(&[list.now() - self.chosen,
-                             list.mean_interval()])
+            geometric_mean(&[list.now() - self.chosen, list.mean_interval()])
         } else {
             list.mean_interval()
         }
@@ -303,17 +319,20 @@ pub fn read_lists(code: &str) -> Vec<String> {
             let mut lists = Vec::new();
             for entry in ddd {
                 if let Ok(entry) = entry {
-                    if let Some(s) = entry.path().to_str()
-                        .iter().flat_map(|x| x.rsplit('/')).next() {
+                    if let Some(s) = entry
+                        .path()
+                        .to_str()
+                        .iter()
+                        .flat_map(|x| x.rsplit('/'))
+                        .next()
+                    {
                         lists.push(s.to_string());
                     }
                 }
             }
             lists
         }
-        Err(_) => {
-            Vec::new()
-        }
+        Err(_) => Vec::new(),
     }
 }
 
@@ -336,7 +355,7 @@ impl DisplayAs<HTML> for ThingsOnly {}
 impl ThingList {
     fn read(code: &str, name: &str) -> Self {
         if let Ok(f) = ::std::fs::File::open(format!("data/{}/{}", code, name)) {
-            if let Ok(mut s) = serde_yaml::from_reader::<_,Vec<Thing>>(&f) {
+            if let Ok(mut s) = serde_yaml::from_reader::<_, Vec<Thing>>(&f) {
                 // Anything that has an empty name should just be deleted...
                 s.retain(|x| x.name.len() > 0);
                 // Do not retain any duplicate entries, since that can cause trouble and confusion!
@@ -370,7 +389,7 @@ impl ThingList {
         self.things.sort_by_key(|x| x.chosen as i64);
         self.things.sort_by_key(|x| x.count as i64);
         let now = self.now();
-        for (i,x) in self.things.iter_mut().enumerate() {
+        for (i, x) in self.things.iter_mut().enumerate() {
             x.next = now + i as f64;
         }
         self.save();
@@ -383,14 +402,13 @@ impl ThingList {
         self.things.len() as f64
     }
     fn save(&self) {
-        let f = atomicfile::AtomicFile::create(format!("data/{}/{}",
-                                                       self.code, self.name))
+        let f = atomicfile::AtomicFile::create(format!("data/{}/{}", self.code, self.name))
             .expect("error creating save file");
         serde_yaml::to_writer(&f, &self.things).expect("error writing yaml")
     }
     fn edit(&mut self, which: &str) -> &mut Thing {
         let mut wh = self.things.len();
-        for (i,th) in self.things.iter().enumerate() {
+        for (i, th) in self.things.iter().enumerate() {
             if th.name == which {
                 wh = i;
                 break;
@@ -428,7 +446,7 @@ impl ThingList {
             parent_name: self.name.clone(),
             parent_code: self.code.clone(),
         };
-        for (i,th) in self.things.iter().enumerate() {
+        for (i, th) in self.things.iter().enumerate() {
             if th.name == which {
                 thing = th.clone();
                 which_num = i;
@@ -442,9 +460,9 @@ impl ThingList {
         }
         self.things.remove(which_num);
         let mut place = 0;
-        for (i,th) in self.things.iter().enumerate() {
+        for (i, th) in self.things.iter().enumerate() {
             if th.next <= thing.next {
-                place = i+1;
+                place = i + 1;
             }
         }
         self.things.insert(place, thing);
@@ -466,7 +484,7 @@ impl ThingList {
             parent_code: self.code.clone(),
         };
 
-        for (i,th) in self.things.iter_mut().enumerate() {
+        for (i, th) in self.things.iter_mut().enumerate() {
             if th.name == which {
                 thing = th.clone();
                 which_num = i;
@@ -479,11 +497,11 @@ impl ThingList {
         while self.things[which_num].name == which {
             // Checking that the thing was actually found and hasn't yet moved
             self.things.remove(which_num);
-            thing.next += thing.delay_time(self)*(0.1 + 0.9*rand::random::<f64>());
+            thing.next += thing.delay_time(self) * (0.1 + 0.9 * rand::random::<f64>());
             let mut place = 0;
-            for (i,th) in self.things.iter().enumerate() {
+            for (i, th) in self.things.iter().enumerate() {
                 if th.next <= thing.next {
-                    place = i+1;
+                    place = i + 1;
                 }
             }
             self.things.insert(place, thing.clone());
@@ -520,5 +538,5 @@ pub fn geometric_mean(data: &[f64]) -> f64 {
     for &d in data.iter() {
         product *= d;
     }
-    product.powf(1.0/data.len() as f64)
+    product.powf(1.0 / data.len() as f64)
 }
